@@ -1,0 +1,27 @@
+# Netlify deploys Swing Fit on every push to main.
+# The build step copies the app into dist/ and stamps a build id into index.html and sw.js,
+# so phones that installed the app pick up the new version automatically.
+[build]
+  publish = "dist"
+  command = """
+    BUILD="$(date -u +%Y%m%d.%H%M)-$(echo ${COMMIT_REF:-local} | cut -c1-7)"
+    rm -rf dist && mkdir dist
+    cp index.html sw.js manifest.json icon-192.png icon-512.png apple-touch-icon.png dist/
+    sed -i "s/__BUILD__/$BUILD/g" dist/index.html dist/sw.js
+    echo "Build $BUILD"
+  """
+
+# Always fetch fresh app files so updates show up right away.
+[[headers]]
+  for = "/sw.js"
+  [headers.values]
+    Cache-Control = "no-cache"
+[[headers]]
+  for = "/index.html"
+  [headers.values]
+    Cache-Control = "no-cache"
+[[headers]]
+  for = "/"
+  [headers.values]
+    Cache-Control = "no-cache"
+    X-Robots-Tag = "noindex, nofollow"

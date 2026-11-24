@@ -1,11 +1,11 @@
 # Swing Fit: notes for Claude Code
 
-Personal golf workout app, installed on Mack's phone as a PWA from GitHub Pages. Not a product.
+Personal golf workout app, installed on Mack's phone as a PWA, hosted on Netlify (auto deploys on push to `main`). Not a product.
 
 ## Structure
 - `index.html`: the whole app (HTML, CSS, vanilla JS). No frameworks, no build step, no dependencies.
 - `sw.js`: offline cache, network first with `cache: 'no-store'`.
-- `.github/workflows/deploy.yml`: deploys to Pages on push to `main` and replaces `__BUILD__` in `index.html` and `sw.js` with a build id. Leave the `__BUILD__` placeholders in the source.
+- `netlify.toml`: Netlify build copies the app to `dist/` and replaces `__BUILD__` in `index.html` and `sw.js` with a build id. Leave the `__BUILD__` placeholders in the source. New files the app needs must be added to the `cp` line.
 - `manifest.json`, icons: home screen install.
 
 ## Data (localStorage, keys prefixed `sf_`)

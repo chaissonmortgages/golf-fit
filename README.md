@@ -10,11 +10,11 @@ Golf fitness programs and workout tracker for my phone. One HTML file, no build 
 - Calendar of bubbles (green done, yellow skipped), golf round days that move heavy leg days, one tap add to Apple or Google Calendar
 
 ## Hosting and updates
-GitHub Pages, deployed by `.github/workflows/deploy.yml` on every push to `main`.
+Netlify, linked to this repo. Every push to `main` deploys automatically (`netlify.toml` holds the build step).
 
-One time setup: repo **Settings > Pages > Build and deployment > Source: GitHub Actions**.
+The app is only reachable by its link. It is kept out of search engines.
 
-The app lives at `https://chaissonmortgages.github.io/golf-fit/`. On iPhone open it in Safari, then Share > Add to Home Screen.
+On iPhone open the Netlify link in Safari, then Share > Add to Home Screen.
 
 Updates are automatic. Each deploy stamps a new build id into `sw.js`, the service worker fetches fresh files every time the app opens, and the installed app reloads itself into the new version (it waits if a workout is in progress). The build id shows at the bottom of the Profile tab.
 
