@@ -733,7 +733,8 @@ function viewMe(){
   <div class="card"><b>Get it on your home screen</b><p class="muted small" style="margin:6px 0 0">In Safari tap Share, then <b>Add to Home Screen</b>. It opens full screen and works offline. Your workouts are saved on this phone only.</p></div>
   <div class="row"><button class="btn ghost" data-act="backup">Back up data</button><button class="btn ghost" data-act="restore">Restore</button></div>
   <button class="btn danger" style="margin-top:22px" data-act="reset">Erase everything</button>
-  <p class="small muted" style="text-align:center;margin-top:20px">Swing Fit · version ${APP_BUILD}<br>Not medical advice. Stop if something hurts.</p>`;
+  <button class="btn ghost" style="margin-top:22px" data-act="checkupd">Check for updates</button>
+  <p class="small muted" style="text-align:center;margin-top:14px">Swing Fit · version ${APP_BUILD}<br>Not medical advice. Stop if something hurts.</p>`;
 }
 function fmtTime(t){if(!t)return'';const[h,m]=t.split(':').map(Number);return((h%12)||12)+':'+pad(m)+(h<12?' am':' pm')}
 
@@ -1210,6 +1211,7 @@ function onClick(ev){
       if(mv.length)sheet(`<h2>Moved for your round</h2><p class="muted">Heavy leg days are kept off the day before and the day of a round.</p>${mv.map(m=>'<div class="pill" style="margin:0 6px 6px 0">'+esc(m)+'</div>').join('')}<p class="muted small">If you added this plan to your calendar, add it again from Programs to update the dates.</p><button class="btn" data-act="close">Got it</button>`);
       else openDay(v);break}
     case'badge':openBadge(v);break;
+    case'checkupd':checkForUpdate(true);break;
     case'lift':openLift(v);break;
     case'dellog':ask('Delete this workout?','This removes it from your calendar.','Delete',()=>{const l=S.logs.find(x=>x.id===v);S.logs=S.logs.filter(x=>x.id!==v);if(l&&l.planId){const p=S.plans.find(x=>x.id===l.planId);if(p)p.sessions.forEach(s=>{if(s.done===l.date&&!S.logs.some(o=>o.planId===p.id&&o.date===l.date))s.done=null})}save();closeSheet();render()});break;
     case'requiz':startQuiz();break;
@@ -1242,7 +1244,7 @@ function onClick(ev){
     case'finish':summary();break;
     case'savew':saveWorkout();break;
     case'pexit':exitPlayer();break;
-    case'discard':S.active=null;restEnd=0;cd=null;save();{const p=document.querySelector('.player');if(p)p.remove()}closeSheet();render();break;
+    case'discard':S.active=null;restEnd=0;cd=null;save();{const p=document.querySelector('.player');if(p)p.remove()}closeSheet();render();if(updateWaiting)setTimeout(()=>location.reload(),800);break;
   }
 }
 document.addEventListener('click',onClick);
@@ -1252,21 +1254,31 @@ document.addEventListener('visibilitychange',()=>{if(document.visibilityState===
 checkBadges();
 render();
 /* ---------- auto update ----------
-   The service worker checks for a new version every time the app opens or comes back to the front.
-   When one is ready it reloads, unless a workout is in progress (then it waits until you save). */
+   Every time the app opens or comes back to the front it asks the server which build is live.
+   If it is newer than the one running, the app reloads into it, unless a workout is in progress
+   (then it waits until the workout is saved or discarded). */
 let updateWaiting=false;
-if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claudeusercontent|claude\.ai/.test(location.host)){
-  const hadController=!!navigator.serviceWorker.controller;
-  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
-    const check=()=>reg.update().catch(()=>{});
-    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
-    setInterval(check,30*60*1000);
-  }).catch(()=>{});
-  navigator.serviceWorker.addEventListener('controllerchange',()=>{
-    if(!hadController)return;
-    if(S.active){updateWaiting=true;return}
-    location.reload();
-  });
+const liveHost='serviceWorker' in navigator&&location.protocol==='https:'&&!/claudeusercontent|claude\.ai/.test(location.host)&&APP_BUILD.indexOf('__')!==0;
+async function checkForUpdate(manual){
+  if(!liveHost){if(manual)toast('Updates only run on the installed app');return}
+  try{
+    const reg=await navigator.serviceWorker.getRegistration();if(reg)reg.update().catch(()=>{});
+    const txt=await (await fetch('sw.js?v='+Date.now(),{cache:'no-store'})).text();
+    const m=txt.match(/swingfit-([\w.-]+)/);const live=m&&m[1];
+    let tried='';try{tried=sessionStorage.getItem('sf_upd')||''}catch(e){}
+    if(live&&live!==APP_BUILD&&(manual||tried!==live)){
+      try{sessionStorage.setItem('sf_upd',live)}catch(e){}
+      if(S.active){updateWaiting=true;if(manual)toast('Update ready. It installs after this workout.');return}
+      if(manual)toast('Updating...');
+      setTimeout(()=>location.reload(),manual?600:0);
+    }else if(manual)toast('You have the latest version');
+  }catch(e){if(manual)toast('Could not check. Are you online?')}
+}
+if(liveHost){
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).catch(()=>{});
+  document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')checkForUpdate(false)});
+  window.addEventListener('pageshow',()=>checkForUpdate(false));
+  setInterval(()=>checkForUpdate(false),15*60*1000);
 }
 </script>
 </body>
