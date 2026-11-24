@@ -1,0 +1,1115 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover, user-scalable=no">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+<meta name="apple-mobile-web-app-title" content="Swing Fit">
+<meta name="theme-color" content="#0a0f0c">
+<title>Swing Fit</title>
+<link rel="manifest" href="manifest.json">
+<link rel="apple-touch-icon" href="apple-touch-icon.png">
+<style>
+:root{
+  --bg:#0a0f0c;--card:#131b16;--card2:#1a251e;--line:#24322a;--text:#eef3ef;--muted:#8a9c91;
+  --green:#3fd47a;--green-d:#1f6b3f;--yellow:#f5c84c;--red:#ef6b5b;--accent:#3fd47a;
+  --safe-t:env(safe-area-inset-top,0px);--safe-b:env(safe-area-inset-bottom,0px);
+}
+*{box-sizing:border-box;-webkit-tap-highlight-color:transparent}
+html,body{margin:0;background:var(--bg);color:var(--text);font:16px/1.4 -apple-system,BlinkMacSystemFont,"SF Pro Text","Segoe UI",Roboto,sans-serif;-webkit-font-smoothing:antialiased}
+body{overscroll-behavior:none}
+button{font:inherit;color:inherit;border:0;background:none;cursor:pointer}
+input{font:inherit;color:var(--text)}
+h1,h2,h3{margin:0;font-weight:700;letter-spacing:-.01em}
+.wrap{padding:calc(var(--safe-t) + 18px) 18px calc(var(--safe-b) + 96px);max-width:560px;margin:0 auto}
+.muted{color:var(--muted)}
+.small{font-size:13px}
+.row{display:flex;align-items:center;gap:10px}
+.sp{flex:1}
+.card{background:var(--card);border:1px solid var(--line);border-radius:18px;padding:16px;margin:12px 0}
+.btn{display:flex;align-items:center;justify-content:center;gap:8px;width:100%;padding:15px 16px;border-radius:14px;background:var(--green);color:#06210f;font-weight:700;font-size:17px}
+.btn:active{transform:scale(.98)}
+.btn.ghost{background:var(--card2);color:var(--text);border:1px solid var(--line)}
+.btn.sm{padding:10px 12px;font-size:15px;border-radius:12px;width:auto}
+.btn.danger{background:transparent;color:var(--red);border:1px solid #4a2723}
+.btn[disabled]{opacity:.4}
+.pill{display:inline-block;padding:4px 10px;border-radius:99px;background:var(--card2);border:1px solid var(--line);font-size:13px;color:var(--muted)}
+.pill.g{color:var(--green);border-color:var(--green-d)}
+.tag{font-size:12px;font-weight:700;letter-spacing:.06em;text-transform:uppercase;color:var(--muted)}
+.hello{font-size:28px}
+.list-btn{display:flex;align-items:center;gap:14px;width:100%;text-align:left;padding:14px;background:var(--card);border:1px solid var(--line);border-radius:16px;margin:10px 0}
+.list-btn .ic{width:46px;height:46px;border-radius:13px;display:grid;place-items:center;flex:none}
+.list-btn h3{font-size:17px}
+.chev{color:var(--muted);font-size:22px}
+/* tabbar */
+.tabbar{position:fixed;left:0;right:0;bottom:0;display:flex;background:rgba(12,18,14,.92);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);border-top:1px solid var(--line);padding:6px 6px calc(var(--safe-b) + 6px);z-index:5}
+.tabbar button{flex:1;display:flex;flex-direction:column;align-items:center;gap:2px;padding:6px 0;font-size:11px;color:var(--muted)}
+.tabbar button.on{color:var(--green)}
+.tabbar svg{width:24px;height:24px}
+/* quiz */
+.quiz{min-height:100vh;display:flex;flex-direction:column;padding:calc(var(--safe-t) + 18px) 20px calc(var(--safe-b) + 20px);max-width:560px;margin:0 auto}
+.bar{height:5px;background:var(--card2);border-radius:9px;overflow:hidden}
+.bar i{display:block;height:100%;background:var(--green);border-radius:9px;transition:width .3s}
+.qtitle{font-size:26px;margin:28px 0 18px;line-height:1.2}
+.opt{display:block;width:100%;text-align:left;padding:16px;margin:10px 0;border-radius:15px;background:var(--card);border:1.5px solid var(--line)}
+.opt b{display:block;font-size:17px}
+.opt span{color:var(--muted);font-size:14px}
+.opt.on{border-color:var(--green);background:#12251a}
+.field{width:100%;padding:16px;border-radius:14px;background:var(--card);border:1.5px solid var(--line);font-size:20px;outline:none}
+.field:focus{border-color:var(--green)}
+/* sheet */
+.sheet-bg{position:fixed;inset:0;background:rgba(0,0,0,.55);z-index:40;display:flex;align-items:flex-end;justify-content:center;animation:fade .2s}
+.sheet{width:100%;max-width:560px;max-height:92vh;overflow:auto;background:#0f1612;border:1px solid var(--line);border-bottom:0;border-radius:22px 22px 0 0;padding:10px 18px calc(var(--safe-b) + 20px);animation:up .25s ease-out}
+.grab{width:40px;height:5px;border-radius:9px;background:var(--line);margin:4px auto 14px}
+@keyframes up{from{transform:translateY(40px);opacity:.4}}
+@keyframes fade{from{opacity:0}}
+.chips{display:flex;flex-wrap:wrap;gap:8px}
+.chip{padding:10px 0;width:calc((100% - 48px)/7);text-align:center;border-radius:12px;background:var(--card);border:1.5px solid var(--line);font-weight:600;font-size:14px}
+.chip.on{background:var(--green);color:#06210f;border-color:var(--green)}
+.inp{padding:12px;border-radius:12px;background:var(--card);border:1.5px solid var(--line);width:100%;font-size:17px;outline:none;-webkit-appearance:none;appearance:none;min-height:48px}
+label.lbl{display:block;margin:18px 0 8px;font-weight:600}
+/* calendar */
+.cal{display:grid;grid-template-columns:repeat(7,1fr);gap:8px 6px;text-align:center}
+.cal .dow{font-size:12px;color:var(--muted);font-weight:600}
+.bub{aspect-ratio:1;border-radius:50%;display:grid;place-items:center;font-size:14px;font-weight:600;background:#000;border:1.5px solid #1c2620;color:#6f8077;width:100%;max-width:46px;margin:0 auto}
+.bub.done{background:var(--green);border-color:var(--green);color:#06210f}
+.bub.missed{background:var(--yellow);border-color:var(--yellow);color:#2a2000}
+.bub.planned{border:2px dashed #5b6e62;color:var(--text)}
+.bub.today{box-shadow:0 0 0 2px var(--bg),0 0 0 4px #ffffff55}
+.bub.out{visibility:hidden}
+.legend{display:flex;gap:14px;flex-wrap:wrap;font-size:13px;color:var(--muted);margin-top:14px}
+.legend i{display:inline-block;width:12px;height:12px;border-radius:50%;vertical-align:-1px;margin-right:5px}
+.stats{display:grid;grid-template-columns:repeat(3,1fr);gap:10px}
+.stat{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:12px;text-align:center}
+.stat b{display:block;font-size:24px}
+.stat span{font-size:12px;color:var(--muted)}
+/* player */
+.player{position:fixed;inset:0;background:var(--bg);z-index:30;display:flex;flex-direction:column}
+.p-top{padding:calc(var(--safe-t) + 8px) 14px 10px;border-bottom:1px solid var(--line);background:#0c1310}
+.clock{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
+.p-x{width:40px;height:40px;border-radius:12px;background:var(--card2);font-size:20px;display:grid;place-items:center}
+.dots{display:flex;gap:4px;margin-top:10px}
+.dots i{flex:1;height:4px;border-radius:9px;background:var(--card2)}
+.dots i.d{background:var(--green-d)}
+.dots i.c{background:var(--green)}
+.rest{margin-top:10px;display:flex;align-items:center;gap:10px;background:#2a2410;border:1px solid #5a4a15;color:var(--yellow);padding:8px 12px;border-radius:12px;font-weight:700}
+.rest .tr{flex:1;height:5px;background:#3d3414;border-radius:9px;overflow:hidden}
+.rest .tr i{display:block;height:100%;background:var(--yellow)}
+.p-body{flex:1;overflow:auto;padding:16px 16px 20px;-webkit-overflow-scrolling:touch}
+.p-name{font-size:25px;line-height:1.15}
+.diagram{background:radial-gradient(120% 90% at 50% 10%,#17241c,#0e1611);border:1px solid var(--line);border-radius:18px;margin:14px 0;padding:6px;display:flex;justify-content:center}
+.diagram svg{width:100%;max-width:300px;max-height:30vh;height:auto;display:block}
+.cues{margin:0;padding-left:20px;color:#cfdad3}
+.cues li{margin:5px 0}
+.sets{margin:16px 0 6px}
+.sethead,.setrow{display:grid;grid-template-columns:34px 1fr 1fr 52px;gap:8px;align-items:center}
+.sets.nw .sethead,.sets.nw .setrow{grid-template-columns:34px 1fr 52px}
+.sethead{font-size:12px;color:var(--muted);font-weight:700;text-transform:uppercase;letter-spacing:.05em;padding:0 2px 6px}
+.setrow{margin:8px 0}
+.setrow .n{width:34px;height:34px;border-radius:50%;background:var(--card2);display:grid;place-items:center;font-weight:700;font-size:14px;color:var(--muted)}
+.setrow input{width:100%;padding:12px 8px;border-radius:12px;background:var(--card);border:1.5px solid var(--line);text-align:center;font-size:19px;font-weight:700;outline:none}
+.setrow input:focus{border-color:var(--green)}
+.setrow input::placeholder{color:#55665c;font-weight:600}
+.ck{width:52px;height:48px;border-radius:12px;background:var(--card2);border:1.5px solid var(--line);display:grid;place-items:center;font-size:22px;color:var(--muted)}
+.setrow.ok .ck{background:var(--green);border-color:var(--green);color:#06210f}
+.setrow.ok input{border-color:var(--green-d);background:#102018}
+.setrow.ok .n{background:var(--green-d);color:#cfeedd}
+.tbtn{width:100%;padding:12px 8px;border-radius:12px;background:#12251a;border:1.5px solid var(--green-d);color:var(--green);font-weight:700;font-size:16px}
+.tbtn.run{background:var(--yellow);color:#2a2000;border-color:var(--yellow)}
+.addset{color:var(--green);font-weight:600;padding:8px 0;font-size:15px}
+.yt{display:flex;align-items:center;justify-content:center;gap:8px;padding:13px;border-radius:14px;border:1px solid var(--line);background:var(--card);color:var(--text);text-decoration:none;font-weight:600;margin-top:16px}
+.p-nav{display:flex;gap:10px;padding:10px 14px calc(var(--safe-b) + 10px);border-top:1px solid var(--line);background:#0c1310}
+.p-nav .btn{flex:1}
+/* diagram figure */
+.fig .limb{stroke:#e9f1ec;stroke-width:4.2;stroke-linecap:round}
+.fig .limb.bk{stroke:#7f948a}
+.fig .torso{stroke:#e9f1ec;stroke-width:5.5;stroke-linecap:round}
+.fig .head{fill:#e9f1ec}
+.fig .ground{stroke:#2c3b32;stroke-width:1.5}
+.fig .band{stroke:#ff8a3d;stroke-width:2;stroke-dasharray:3 2.5;fill:none}
+.fig .cable{stroke:#9fb3a8;stroke-width:1.6}
+.fig .pulley{fill:#34463b}
+.fig .wt{stroke:#3fd47a;stroke-width:6;stroke-linecap:round}
+.fig .ball{fill:#3fd47a}
+.fig .plate{fill:none;stroke:#3fd47a;stroke-width:3.5}
+.fig .club{stroke:#c8d1cc;stroke-width:1.8;stroke-linecap:round}
+.fig .furn{fill:#23322a;stroke:#3a4c41;stroke-width:1}
+.fig .bar2{stroke:#3fd47a;stroke-width:3;stroke-linecap:round}
+.toast{position:fixed;left:50%;bottom:calc(var(--safe-b) + 92px);transform:translateX(-50%);background:#eef3ef;color:#0a0f0c;padding:10px 16px;border-radius:12px;font-weight:600;z-index:60;font-size:15px;animation:fade .2s;max-width:90vw;text-align:center}
+.sumgrid{display:grid;grid-template-columns:1fr 1fr;gap:10px;margin:14px 0}
+.hist-ex{padding:8px 0;border-top:1px solid var(--line)}
+.hist-ex:first-child{border-top:0}
+.sug{margin-top:8px;font-size:14px;padding:8px 12px;border-radius:12px;background:var(--card2);color:var(--muted)}
+.sug.up{background:#12251a;color:var(--green);font-weight:600}
+.setrow.pr .n{background:var(--yellow);color:#2a2000}
+.bub{position:relative}
+.bub.rd::after{content:'';position:absolute;top:-2px;right:-2px;width:11px;height:11px;border-radius:50%;background:#fff;border:2px solid var(--card)}
+.bgrid{display:grid;grid-template-columns:repeat(4,minmax(0,1fr));gap:14px 6px;margin:12px 0 22px}
+.bd{display:flex;flex-direction:column;align-items:center;gap:6px;text-align:center;padding:0}
+.medal{width:58px;height:58px;border-radius:50%;display:grid;place-items:center;background:var(--c);box-shadow:0 0 0 3px rgba(255,255,255,.10),inset 0 -5px 0 rgba(0,0,0,.18)}
+.medal svg{width:28px;height:28px;stroke:#0a0f0c;fill:none;stroke-width:2;stroke-linecap:round;stroke-linejoin:round}
+.bd.lock .medal{background:var(--card2);box-shadow:inset 0 0 0 1.5px var(--line)}
+.bd.lock .medal svg{stroke:#4d5d53}
+.bn{font-size:11.5px;line-height:1.2}
+.bd.lock .bn{color:var(--muted)}
+.medal.big{width:100px;height:100px;margin:6px auto 12px}
+.medal.big svg{width:48px;height:48px}
+.pbar{height:7px;border-radius:9px;background:var(--card2);overflow:hidden;margin-top:8px}
+.pbar i{display:block;height:100%;background:var(--green)}
+.chart{background:var(--card);border:1px solid var(--line);border-radius:16px;padding:8px;margin:12px 0}
+.chart svg{display:block;width:100%;height:auto}
+</style>
+</head>
+<body>
+<div id="app"></div>
+<div id="layer"></div>
+<script>
+/* Swing Fit: golf fitness tracker. All data stays on this phone (localStorage). */
+
+const APP_BUILD='__BUILD__';
+/* ---------- storage ---------- */
+const store={
+  get(k,d){try{const v=localStorage.getItem('sf_'+k);return v?JSON.parse(v):d}catch(e){return d}},
+  set(k,v){try{localStorage.setItem('sf_'+k,JSON.stringify(v))}catch(e){}}
+};
+const S={profile:store.get('profile',null),plans:store.get('plans',[]),logs:store.get('logs',[]),active:store.get('active',null),rounds:store.get('rounds',[]),badges:store.get('badges',{}),archive:store.get('archive',[])};
+function save(){store.set('profile',S.profile);store.set('plans',S.plans);store.set('logs',S.logs);store.set('active',S.active);store.set('rounds',S.rounds);store.set('badges',S.badges);store.set('archive',S.archive)}
+
+/* ---------- helpers ---------- */
+const DOW=['Sun','Mon','Tue','Wed','Thu','Fri','Sat'];
+const DOWL=['Sunday','Monday','Tuesday','Wednesday','Thursday','Friday','Saturday'];
+const ICSDAY=['SU','MO','TU','WE','TH','FR','SA'];
+const pad=n=>String(n).padStart(2,'0');
+const dkey=d=>d.getFullYear()+'-'+pad(d.getMonth()+1)+'-'+pad(d.getDate());
+const pkey=k=>{const[y,m,d]=k.split('-').map(Number);return new Date(y,m-1,d)};
+const todayKey=()=>dkey(new Date());
+const addDays=(d,n)=>{const x=new Date(d);x.setDate(x.getDate()+n);return x};
+const fmtDate=k=>pkey(k).toLocaleDateString('en-CA',{weekday:'short',month:'short',day:'numeric'});
+const esc=s=>String(s==null?'':s).replace(/[&<>"']/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[c]));
+const uid=()=>Math.random().toString(36).slice(2,9)+Date.now().toString(36).slice(-4);
+const mmss=s=>{s=Math.max(0,Math.round(s));const h=Math.floor(s/3600),m=Math.floor(s%3600/60),x=s%60;return(h?h+':'+pad(m):m)+':'+pad(x)};
+function toast(msg){const t=document.createElement('div');t.className='toast';t.textContent=msg;document.body.appendChild(t);setTimeout(()=>t.remove(),2200)}
+
+/* ---------- stick figure poses ----------
+   Joints: head, neck, hip, back knee, back foot, front knee, front foot,
+   back elbow, back hand, front elbow, front hand. Ground is y=110. */
+const J=['hd','nk','hp','kL','fL','kR','fR','eL','hL','eR','hR'];
+const POSE={};
+const def=(n,a)=>{POSE[n]=a};
+const mod=(b,ch)=>{const a=(typeof b==='string'?POSE[b]:b).slice();for(const k in ch){const i=J.indexOf(k);a[i*2]=ch[k][0];a[i*2+1]=ch[k][1]}return a};
+const mirror=b=>POSE[b].map((v,i)=>i%2===0?100-v:v);
+const shift=(b,dx,dy)=>POSE[b].map((v,i)=>i%2===0?v+dx:v+dy);
+const F=(hx,arms)=>[hx,24,hx,35,50,62,42,84,36,109,58,84,64,109].concat(arms);
+const FS=arms=>[50,20,50,31,50,61,45,85,43,109,55,85,57,109].concat(arms);
+
+def('stand',[50,20,50,31,50,61,49,85,49,109,52,85,53,109,49,46,50,60,52,46,53,60]);
+POSE.standUp=mod('stand',{eL:[47,16],hL:[46,2],eR:[53,16],hR:[54,2]});
+POSE.standFwd=mod('stand',{eL:[64,33],hL:[79,33],eR:[65,34],hR:[80,34]});
+POSE.standGob=mod('stand',{eL:[55,44],hL:[59,37],eR:[56,45],hR:[60,38]});
+def('squatGob',[56,46,52,57,36,80,58,85,50,109,60,86,52,109,58,70,62,62,59,71,63,63]);
+POSE.squatFwd=mod('squatGob',{eL:[66,57],hL:[81,57],eR:[67,58],hR:[82,58]});
+POSE.squatFwd2=mod('squatFwd',{hd:[56,48],nk:[52,59],hp:[36,82]});
+POSE.squatBack=mod('squatGob',{eL:[44,68],hL:[34,76],eR:[45,69],hR:[35,77]});
+def('jumpTop',[50,6,50,17,50,47,50,71,48,95,53,71,51,95,58,4,64,-8,59,5,65,-7]);
+POSE.jumpFwd=shift('jumpTop',18,0);
+POSE.boxStart=shift('squatBack',-14,0);
+POSE.onBox=shift('standFwd',22,-18);
+def('hingeBot',[77,50,68,52,42,58,46,83,44,109,48,83,47,109,68,68,68,83,69,68,69,83]);
+POSE.hingeTop=mod('stand',{eL:[51,46],hL:[53,62],eR:[52,46],hR:[54,62]});
+POSE.swingBot=mod('hingeBot',{eL:[62,66],hL:[54,80],eR:[63,66],hR:[55,80]});
+POSE.swingTop=mod('stand',{eL:[64,38],hL:[78,42],eR:[64,39],hR:[78,43]});
+def('dlBot',[70,46,62,50,38,66,56,82,48,109,58,83,50,109,60,66,58,82,61,67,59,83]);
+def('splitTop',[50,20,50,31,50,61,40,84,28,108,62,84,66,109,49,46,50,60,51,46,52,60]);
+def('splitBot',[50,36,50,47,50,77,38,100,24,106,72,79,72,109,49,62,50,76,51,62,51,76]);
+POSE.splitBotRot=mod('splitBot',{eL:[58,56],hL:[66,50],eR:[57,58],hR:[65,52]});
+def('slTop',[50,20,50,31,50,61,50,85,50,109,47,85,43,104,50,46,51,61,51,46,52,61]);
+def('slBot',[78,52,70,54,46,60,48,84,48,109,24,61,2,61,70,70,70,85,71,70,71,85]);
+POSE.balance=mod('stand',{kR:[64,66],fR:[62,90],eL:[42,44],hL:[34,54],eR:[60,44],hR:[68,54]});
+POSE.balance2=mod('balance',{hd:[51,20],eL:[41,43],hL:[32,52],eR:[61,45],hR:[70,56]});
+def('plank',[84,82,75,88,46,92,28,98,10,104,29,98,11,105,75,106,90,106,76,106,91,106]);
+POSE.plank2=mod('plank',{hp:[46,94],hd:[84,83]});
+def('plankHi',[84,74,75,80,46,90,28,97,10,104,29,97,11,105,75,94,75,108,76,94,76,108]);
+POSE.plankTap=mod('plankHi',{eR:[82,88],hR:[76,80]});
+def('pushDown',[86,92,76,98,46,100,28,102,10,105,29,102,11,106,64,94,75,108,65,94,76,108]);
+def('sideUp',[84,80,75,88,46,92,28,99,10,105,28,98,10,104,75,106,90,106,76,74,77,60]);
+POSE.sideDown=mod('sideUp',{hp:[46,101],kL:[28,104],kR:[28,103]});
+def('bridgeDn',[14,101,24,104,56,105,72,86,82,109,73,86,83,109,38,107,52,108,39,107,53,108]);
+POSE.bridgeUp=mod('bridgeDn',{hp:[56,90],kL:[74,83],kR:[75,83]});
+POSE.slBridgeDn=mod('bridgeDn',{kR:[70,82],fR:[92,78]});
+POSE.slBridgeUp=mod('bridgeUp',{kR:[78,80],fR:[98,74]});
+def('bugA',[14,99,24,102,56,103,58,82,74,82,59,82,75,82,27,86,29,72,28,86,30,72]);
+POSE.bugB=mod('bugA',{kR:[78,98],fR:[99,100],eL:[12,96],hL:[0,94]});
+def('quad',[80,68,71,76,42,76,42,104,22,106,43,104,23,107,71,92,71,107,72,92,72,107]);
+POSE.birdExt=mod('quad',{eR:[86,72],hR:[100,70],kL:[22,76],fL:[2,74]});
+POSE.cow=mod('quad',{hd:[82,62],hp:[42,78]});
+POSE.cat=mod('quad',{hd:[73,86],nk:[70,72],hp:[42,72]});
+POSE.threadIn=mod('quad',{eR:[62,98],hR:[48,104],hd:[70,88]});
+POSE.threadOut=mod('quad',{eR:[72,62],hR:[72,46],hd:[78,66]});
+def('halfKn',[52,40,52,51,50,80,36,107,18,108,70,80,70,109,52,66,56,80,53,66,57,80]);
+POSE.halfKnReach=mod('halfKn',{hp:[56,82],nk:[55,52],hd:[55,41],kL:[40,107],eL:[53,37],hL:[51,22]});
+def('n90',[50,58,50,69,50,100,28,96,18,106,72,100,74,108,40,82,34,96,60,82,66,96]);
+POSE.n90lean=mod('n90',{hd:[62,62],nk:[58,72],eL:[64,84],hL:[72,98],eR:[68,86],hR:[80,100]});
+def('bookA',[14,98,24,100,56,100,70,84,86,100,71,86,87,102,38,96,50,94,38,94,50,92]);
+POSE.bookB=mod('bookA',{eR:[20,84],hR:[12,72],hd:[13,96]});
+def('lowL',[74,62,66,68,44,82,26,106,8,108,68,84,70,109,66,86,66,107,67,86,67,107]);
+POSE.lowLReach=mod('lowL',{eR:[70,52],hR:[74,36],hd:[72,58]});
+// front-view rotation poses (athletic stance)
+def('rotMidR',F(52,[60,44,68,54,62,46,70,56]));
+def('rotMidL',F(48,[36,38,20,40,38,40,22,42]));
+def('rotHighR',F(51,[60,26,72,14,62,28,74,16]));
+def('rotHighL',F(49,[40,26,28,14,38,28,26,16]));
+def('rotLowL',F(49,[42,48,32,62,44,50,34,63]));
+def('addr',F(50,[46,48,50,64,54,48,51,64]));
+def('halfBack',F(51,[58,42,70,46,60,44,71,48]));
+def('finishThru',F(49,[38,36,30,26,40,38,31,27]));
+def('skL',[40,28,40,39,40,66,38,88,34,109,50,86,58,102,30,52,22,62,50,52,56,62]);
+POSE.skR=mirror('skL');
+def('latL',[34,36,36,47,40,76,30,90,26,109,60,92,74,109,40,58,44,66,44,58,46,66]);
+POSE.latR=mirror('latL');
+def('pullA',FS([42,40,47,34,58,40,53,34]));
+def('pullB',FS([34,34,18,32,66,34,82,32]));
+def('pdA',FS([36,18,30,4,64,18,70,4]));
+def('pdB',FS([34,42,38,28,66,42,62,28]));
+def('armsOut',FS([34,32,18,32,66,32,82,32]));
+def('armsOutUp',FS([36,24,24,14,64,24,76,14]));
+def('hipsA',[50,20,50,31,46,61,42,85,41,109,52,85,55,109,38,46,44,60,62,46,56,60]);
+def('hipsB',[50,20,50,31,54,61,46,85,45,109,58,85,59,109,38,46,44,60,62,46,56,60]);
+def('clubShA',FS([38,40,30,30,62,40,70,30]));
+def('clubShB',[52,20,52,31,50,61,45,85,43,109,55,85,57,109,46,40,42,30,60,38,64,29]);
+POSE.swA=mod('stand',{kR:[64,77],fR:[80,94],eL:[62,40],hL:[74,42],eR:[62,41],hR:[74,43]});
+POSE.swB=mod('swA',{kR:[40,84],fR:[30,104]});
+def('rowDn',[78,46,70,50,40,56,44,82,42,109,48,82,46,109,76,66,80,80,70,66,70,82]);
+POSE.rowUp=mod('rowDn',{eR:[58,46],hR:[64,60]});
+def('ath',[54,22,52,33,48,62,54,84,50,109,56,85,53,109,64,36,78,38,65,37,79,39]);
+POSE.bandRowB=mod('ath',{eL:[38,44],hL:[52,44],eR:[39,45],hR:[53,45]});
+POSE.palA=mod('ath',{eL:[56,46],hL:[60,38],eR:[57,47],hR:[61,39]});
+def('benchDn',[14,70,24,74,56,74,72,76,74,109,73,77,76,109,20,86,26,72,21,86,27,72]);
+POSE.benchUp=mod('benchDn',{eL:[25,60],hL:[26,46],eR:[26,60],hR:[27,46]});
+def('stepA',[44,20,44,31,44,61,44,85,44,109,56,72,60,92,44,46,45,60,45,46,46,60]);
+def('stepB',[60,4,60,15,60,45,54,68,50,88,62,69,62,92,60,30,61,44,61,30,62,44]);
+POSE.carryA=mod('stand',{kL:[44,85],fL:[38,109],kR:[56,85],fR:[62,109],eL:[49,46],hL:[50,62],eR:[51,46],hR:[52,62]});
+POSE.carryB=mod('carryA',{kL:[56,85],fL:[62,109],kR:[44,85],fR:[38,109]});
+def('slamBot',[62,50,58,56,38,72,54,86,48,109,56,86,50,109,70,72,76,90,71,72,77,90]);
+def('proneA',[86,100,76,104,46,106,28,107,10,108,29,107,11,109,70,98,80,100,71,98,81,100]);
+POSE.proneB=mod('proneA',{hd:[87,97],eL:[64,92],hL:[76,90],eR:[65,92],hR:[77,90]});
+
+function toPose(a){const o={};J.forEach((k,i)=>o[k]=[a[i*2],a[i*2+1]]);return o}
+const mid=(a,b)=>[(a[0]+b[0])/2,(a[1]+b[1])/2];
+
+function figEls(p,props){
+  const L=(a,b,c)=>({t:'line',c,a:{x1:p[a][0],y1:p[a][1],x2:p[b][0],y2:p[b][1]}});
+  const els=[];
+  const pre=[],post=[];
+  (props||[]).forEach(pr=>{
+    const [kind,arg]=pr.split('@');const n=arg?arg.split(',').map(Number):[];
+    const hm=mid(p.hL,p.hR);
+    if(kind==='band')pre.push({t:'line',c:'band',a:{x1:n[0],y1:n[1],x2:hm[0],y2:hm[1]}});
+    if(kind==='cable'){pre.push({t:'line',c:'cable',a:{x1:n[0],y1:n[1],x2:hm[0],y2:hm[1]}});pre.push({t:'rect',c:'pulley',a:{x:n[0]-3,y:n[1]-3,width:6,height:6,rx:1.5}})}
+    if(kind==='bench')pre.push({t:'rect',c:'furn',a:{x:n[0],y:n[1],width:n[2],height:5,rx:1.5}},{t:'line',c:'ground',a:{x1:n[0]+4,y1:n[1]+5,x2:n[0]+4,y2:110}},{t:'line',c:'ground',a:{x1:n[0]+n[2]-4,y1:n[1]+5,x2:n[0]+n[2]-4,y2:110}});
+    if(kind==='box')pre.push({t:'rect',c:'furn',a:{x:n[0],y:n[1],width:n[2],height:n[3],rx:2}});
+    if(kind==='bandH')post.push({t:'line',c:'band',a:{x1:p.hL[0],y1:p.hL[1],x2:p.hR[0],y2:p.hR[1]}});
+    if(kind==='barH')post.push({t:'line',c:'bar2',a:{x1:p.hL[0]-5,y1:p.hL[1],x2:p.hR[0]+5,y2:p.hR[1]}});
+    if(kind==='kb')post.push({t:'circle',c:'ball',a:{cx:hm[0],cy:hm[1]+3,r:4.5}});
+    if(kind==='mb')post.push({t:'circle',c:'ball',a:{cx:hm[0],cy:hm[1],r:6.5}});
+    if(kind==='bar')post.push({t:'circle',c:'plate',a:{cx:hm[0],cy:hm[1],r:9}});
+    if(kind==='db'){post.push({t:'line',c:'wt',a:{x1:p.hL[0]-4,y1:p.hL[1],x2:p.hL[0]+4,y2:p.hL[1]}});post.push({t:'line',c:'wt',a:{x1:p.hR[0]-4,y1:p.hR[1],x2:p.hR[0]+4,y2:p.hR[1]}})}
+    if(kind==='db1')post.push({t:'line',c:'wt',a:{x1:p.hR[0]-4,y1:p.hR[1],x2:p.hR[0]+4,y2:p.hR[1]}});
+    if(kind==='club'){const dx=p.hR[0]-p.eR[0],dy=p.hR[1]-p.eR[1],l=Math.hypot(dx,dy)||1;post.push({t:'line',c:'club',a:{x1:p.hR[0],y1:p.hR[1],x2:p.hR[0]+dx/l*40,y2:p.hR[1]+dy/l*40}})}
+    if(kind==='clubSh'){const dx=p.hR[0]-p.hL[0],dy=p.hR[1]-p.hL[1],l=Math.hypot(dx,dy)||1;post.push({t:'line',c:'club',a:{x1:p.hL[0]-dx/l*10,y1:p.hL[1]-dy/l*10,x2:p.hR[0]+dx/l*10,y2:p.hR[1]+dy/l*10}})}
+  });
+  els.push(...pre);
+  els.push(L('hp','kL','limb bk'),L('kL','fL','limb bk'),L('nk','eL','limb bk'),L('eL','hL','limb bk'));
+  els.push(L('nk','hp','torso'),L('nk','hd','torso'));
+  els.push(L('hp','kR','limb'),L('kR','fR','limb'),L('nk','eR','limb'),L('eR','hR','limb'));
+  els.push({t:'circle',c:'head',a:{cx:p.hd[0],cy:p.hd[1],r:6.5}});
+  els.push(...post);
+  return els;
+}
+function figureSVG(ex){
+  const A=toPose(POSE[ex.poses[0]]),B=toPose(POSE[ex.poses[1]]);
+  const ea=figEls(A,ex.prop),eb=figEls(B,ex.prop);
+  const dur=ex.dur||2.6;
+  let out='<svg class="fig" viewBox="-6 -14 112 128" xmlns="http://www.w3.org/2000/svg"><line class="ground" x1="-6" y1="110.5" x2="106" y2="110.5"/>';
+  ea.forEach((e,i)=>{
+    const f=eb[i];let attrs='',anims='';
+    for(const k in e.a){
+      const va=+e.a[k].toFixed(1),vb=+f.a[k].toFixed(1);
+      attrs+=` ${k}="${va}"`;
+      if(va!==vb)anims+=`<animate attributeName="${k}" values="${va};${vb};${va}" keyTimes="0;0.5;1" dur="${dur}s" repeatCount="indefinite" calcMode="spline" keySplines="0.45 0 0.55 1;0.45 0 0.55 1"/>`;
+    }
+    out+=`<${e.t} class="${e.c}"${attrs}>${anims}</${e.t}>`;
+  });
+  return out+'</svg>';
+}
+
+/* ---------- exercise library ---------- */
+const EX={};
+function X(id,name,o){
+  const e=Object.assign({id,name,req:['bw'],sets:3,reps:10,secs:0,side:false,rest:60,avoid:[],prop:[],dur:2.6,cues:[]},o);
+  if(e.w===undefined)e.w=e.req.some(r=>['db','cable','mb','bar'].includes(r));
+  EX[id]=e;
+}
+// Power
+X('box_jump','Box jump',{req:['box'],reps:5,rest:75,poses:['boxStart','onBox'],prop:['box@56,91,34,19'],avoid:['knee'],dur:1.8,cues:['Stand about a foot back from the box.','Swing arms back, then throw them up as you jump.','Land soft and quiet. Step down, never jump down.'],yt:'box jump technique'});
+X('jump_squat','Squat jump',{reps:5,rest:75,poses:['squatBack','jumpTop'],avoid:['knee'],dur:1.6,cues:['Quick dip, arms swing back.','Explode straight up, reach high.','Land soft with knees over toes, reset, repeat.'],yt:'squat jump form'});
+X('broad_jump','Broad jump',{reps:5,rest:75,poses:['squatBack','jumpFwd'],avoid:['knee'],dur:1.6,cues:['Load the hips, swing the arms back.','Jump out as far as you can.','Stick the landing, walk back, reset.'],yt:'broad jump technique'});
+X('skater','Skater bounds',{reps:6,side:true,rest:60,poses:['skL','skR'],avoid:['knee'],dur:1.8,cues:['Push hard off one leg and bound sideways.','Land on the other leg and hold it for a beat.','This is the same push you feel into your lead side.'],yt:'skater bounds exercise'});
+X('mb_throw','Med ball rotational throw',{req:['mb'],reps:6,side:true,poses:['rotMidR','rotMidL'],prop:['mb'],avoid:['back'],dur:1.5,cues:['Stand side-on to a wall, ball by your back hip.','Load into the back leg, then fire the hips first.','Let the arms whip through and throw hard into the wall.'],yt:'medicine ball rotational throw golf'});
+X('cable_chop','Cable woodchop',{req:['cable'],reps:8,side:true,poses:['rotHighR','rotLowL'],prop:['cable@94,2'],dur:1.8,cues:['Set the cable high, stand side-on.','Pull across your body, high to low, turning your hips.','Arms stay long. Control it back up.'],yt:'cable woodchop golf'});
+X('band_chop','Band woodchop',{req:['band'],reps:10,side:true,poses:['rotHighR','rotLowL'],prop:['band@94,2'],dur:1.8,cues:['Anchor the band high (door or post).','Pull high to low across your body, turning the hips.','Fast down, slow on the way back.'],yt:'band woodchop exercise'});
+X('db_chop','Dumbbell woodchop',{req:['db'],reps:10,side:true,poses:['rotHighR','rotLowL'],prop:['kb'],dur:1.8,cues:['Hold one dumbbell with both hands.','Start high over one shoulder, chop down to the opposite knee.','Turn through the hips and pivot the back foot.'],yt:'dumbbell woodchop'});
+X('overspeed','Overspeed swings',{reps:8,side:true,rest:45,poses:['halfBack','finishThru'],prop:['club'],dur:1.3,cues:['Flip a driver upside down and hold it by the head.','Swing as fast as you can. Hear the whoosh past your lead foot.','Do the same count from your other side.'],yt:'overspeed training golf club upside down'});
+X('kb_swing','Kettlebell swing',{req:['db'],reps:12,poses:['swingBot','swingTop'],prop:['kb'],avoid:['back'],dur:1.3,cues:['Hinge at the hips, it is not a squat.','Snap the hips forward to float the bell to chest height.','Arms are just ropes. The hips do the work.'],yt:'kettlebell swing form'});
+X('mb_slam','Med ball slam',{req:['mb'],reps:8,poses:['standUp','slamBot'],prop:['mb'],avoid:['back','shoulder'],dur:1.3,cues:['Reach the ball high overhead, up on your toes.','Slam it down hard in front of your feet.','Pick it up with a hinge, not a rounded back.'],yt:'medicine ball slam'});
+X('plyo_push','Explosive push-up',{reps:6,rest:75,poses:['pushDown','plankHi'],avoid:['shoulder','wrist'],dur:1.3,cues:['Lower under control.','Push up fast so your hands leave the floor (or just push fast).','Body stays in one straight line.'],yt:'explosive push up'});
+X('landmine_rot','Landmine rotation',{req:['bar'],reps:8,side:true,poses:['rotHighR','rotHighL'],prop:['kb'],avoid:['back'],dur:2,cues:['Hold the end of the bar at arm\'s length.','Swing it in an arc from one hip to the other.','Pivot the feet and turn the hips, not just the arms.'],yt:'landmine rotation'});
+X('band_punch','Band rotational punch',{req:['band'],reps:8,side:true,poses:['rotMidR','rotMidL'],prop:['band@-2,44'],dur:1.4,cues:['Anchor the band behind you at chest height.','Rotate the hips and punch across your body.','Fast out, slow back.'],yt:'band rotational punch'});
+// Strength
+X('trapbar_dl','Trap bar deadlift',{req:['bar'],reps:6,rest:120,poses:['dlBot','stand'],prop:['bar'],avoid:['back'],cues:['Stand in the middle of the bar, grab the handles.','Chest up, push the floor away.','Stand tall, squeeze glutes, lower with control.'],yt:'trap bar deadlift form'});
+X('goblet_squat','Goblet squat',{req:['db'],reps:10,rest:75,poses:['standGob','squatGob'],prop:['kb'],cues:['Hold the weight at your chest.','Sit down between your heels, chest up.','Drive up through the whole foot.'],yt:'goblet squat form'});
+X('bw_squat','Bodyweight squat',{reps:15,poses:['standFwd','squatFwd'],cues:['Feet shoulder width, arms out front.','Sit back and down as low as feels good.','Stand up tall and squeeze the glutes.'],yt:'bodyweight squat form'});
+X('db_rdl','Dumbbell Romanian deadlift',{req:['db'],reps:10,rest:75,poses:['hingeTop','hingeBot'],prop:['db'],avoid:['back'],cues:['Soft knees, push the hips straight back.','Weights slide down your legs, back stays flat.','Feel the hamstrings, then drive the hips through.'],yt:'dumbbell romanian deadlift'});
+X('split_db','Dumbbell split squat',{req:['db'],reps:8,side:true,rest:75,poses:['splitTop','splitBot'],prop:['db'],avoid:['knee'],cues:['Long stance, weights at your sides.','Drop the back knee straight down.','Push through the front heel.'],yt:'dumbbell split squat'});
+X('db_dl','Dumbbell deadlift',{req:['db'],reps:8,rest:90,poses:['dlBot','stand'],prop:['db'],avoid:['back'],cues:['Dumbbells outside your feet, hips back, chest up.','Push the floor away and stand tall.','Lower with a flat back, weights close to your legs.'],yt:'dumbbell deadlift form'});
+X('db_step_up','Dumbbell step-up',{req:['db'],reps:8,side:true,rest:75,poses:['stepA','stepB'],prop:['db','box@54,92,34,18'],avoid:['knee'],cues:['Dumbbells at your sides, use a sturdy bench or box.','Drive through the top foot only.','Lower slow and controlled.'],yt:'dumbbell step up'});
+X('goblet_lat','Goblet lateral lunge',{req:['db'],reps:8,side:true,rest:60,poses:['latL','latR'],prop:['kb'],avoid:['knee'],dur:3,cues:['Hold a weight at your chest.','Step wide, sit back into that hip.','Push back to centre. Builds a stable lead side.'],yt:'goblet lateral lunge'});
+X('split_squat','Split squat',{reps:10,side:true,poses:['splitTop','splitBot'],avoid:['knee'],cues:['Long stance, tall chest.','Drop the back knee toward the floor.','Push through the front heel to stand.'],yt:'split squat form'});
+X('step_up','Step-up',{reps:8,side:true,poses:['stepA','stepB'],prop:['box@54,92,34,18'],avoid:['knee'],cues:['Use a sturdy bench, box or stair.','Drive through the top foot, do not push off the bottom one.','Lower slow.'],yt:'step up exercise form'});
+X('lat_lunge','Lateral lunge',{reps:8,side:true,poses:['latL','latR'],avoid:['knee'],dur:3,cues:['Step wide to the side.','Sit back into that hip, other leg straight.','Push back to centre. Great for lead-side stability.'],yt:'lateral lunge form'});
+X('db_bench','Dumbbell bench press',{req:['db','bench'],reps:10,rest:75,poses:['benchDn','benchUp'],prop:['db','bench@6,76,60'],avoid:['shoulder'],cues:['Lie on the bench, feet flat.','Lower to the sides of your chest.','Press up and slightly together.'],yt:'dumbbell bench press form'});
+X('pushup','Push-up',{reps:10,poses:['plankHi','pushDown'],avoid:['wrist'],cues:['Hands under shoulders, body straight.','Lower your chest to just above the floor.','Knees down is fine to hit the reps.'],yt:'push up proper form'});
+X('cable_row','Cable row',{req:['cable'],reps:10,poses:['ath','bandRowB'],prop:['cable@100,38'],cues:['Tall posture, slight bend in the knees.','Pull elbows back, squeeze shoulder blades.','Slow on the way out.'],yt:'standing cable row'});
+X('db_row','One-arm dumbbell row',{req:['db'],reps:10,side:true,poses:['rowDn','rowUp'],prop:['db1','bench@64,80,34'],cues:['One hand and knee on a bench, back flat.','Pull the weight to your hip.','Lower it all the way down.'],yt:'one arm dumbbell row'});
+X('band_row','Band row',{req:['band'],reps:12,poses:['ath','bandRowB'],prop:['band@100,38'],cues:['Anchor the band at chest height.','Pull elbows back, squeeze shoulder blades.','Slow on the way out.'],yt:'resistance band row'});
+X('prone_w','Prone W raise',{reps:12,poses:['proneA','proneB'],cues:['Lie face down, arms in a W shape.','Lift elbows and hands off the floor.','Squeeze the shoulder blades, hold 2 sec.'],yt:'prone w raise'});
+X('lat_pd','Lat pulldown',{req:['cable'],reps:10,poses:['pdA','pdB'],prop:['barH'],avoid:['shoulder'],cues:['Grip a bit wider than shoulders.','Pull the bar to your upper chest.','Control it back up.'],yt:'lat pulldown form'});
+X('pull_apart','Band pull-apart',{req:['band'],reps:15,rest:45,poses:['pullA','pullB'],prop:['bandH'],cues:['Arms straight out in front.','Pull the band apart to your chest.','Squeeze the upper back, slow back in.'],yt:'band pull apart'});
+X('farmer','Farmer carry',{req:['db'],secs:30,poses:['carryA','carryB'],prop:['db'],dur:1.2,cues:['Heavy weight in each hand.','Walk tall, shoulders down and back.','Short, quick steps.'],yt:'farmer carry'});
+X('suitcase','Suitcase carry',{req:['db'],secs:30,side:true,poses:['carryA','carryB'],prop:['db1'],dur:1.2,cues:['Heavy weight in one hand only.','Do not lean. Stay perfectly tall.','Switch hands each set.'],yt:'suitcase carry'});
+X('glute_bridge','Glute bridge',{reps:15,rest:45,poses:['bridgeDn','bridgeUp'],cues:['Lie on your back, knees bent.','Drive the hips up, squeeze the glutes.','Hold 1 sec at the top.'],yt:'glute bridge form'});
+X('sl_bridge','Single-leg glute bridge',{reps:10,side:true,rest:45,poses:['slBridgeDn','slBridgeUp'],cues:['One foot down, other leg up.','Drive up through the heel.','Keep hips level, no tipping.'],yt:'single leg glute bridge'});
+// Core and balance
+X('dead_bug','Dead bug',{reps:8,side:true,rest:45,poses:['bugA','bugB'],dur:3.2,cues:['On your back, arms up, knees over hips.','Press your low back into the floor.','Reach the opposite arm and leg out slow, then switch.'],yt:'dead bug exercise'});
+X('bird_dog','Bird dog',{reps:8,side:true,rest:45,poses:['quad','birdExt'],dur:3.2,cues:['Hands and knees, back flat.','Reach the opposite arm and leg out long.','Hold 2 sec. Do not let the hips twist.'],yt:'bird dog exercise'});
+X('plank','Plank',{secs:30,rest:45,poses:['plank','plank2'],dur:3,cues:['Elbows under shoulders.','Squeeze glutes and brace like you are about to get punched.','Straight line from head to heels.'],yt:'plank proper form'});
+X('side_plank','Side plank',{sets:2,secs:25,side:true,rest:30,poses:['sideDown','sideUp'],avoid:['shoulder'],dur:3,cues:['Elbow under shoulder, feet stacked.','Lift the hips into a straight line.','Knees down to make it easier.'],yt:'side plank form'});
+X('pallof_cable','Cable Pallof press',{req:['cable'],reps:10,side:true,rest:45,poses:['palA','ath'],prop:['cable@-2,40'],cues:['Stand side-on to the cable, handle at your chest.','Press straight out and do not let it pull you around.','This is your anti-sway, stay-centred muscle.'],yt:'pallof press'});
+X('pallof_band','Band Pallof press',{req:['band'],reps:10,side:true,rest:45,poses:['palA','ath'],prop:['band@-2,40'],cues:['Anchor the band at chest height, stand side-on.','Press straight out, hold 2 sec.','Do not let the band twist you.'],yt:'band pallof press'});
+X('plank_tap','Plank shoulder taps',{reps:10,side:true,rest:45,poses:['plankHi','plankTap'],avoid:['wrist','shoulder'],dur:1.8,cues:['High plank, feet wide.','Tap the opposite shoulder.','Keep the hips dead still.'],yt:'plank shoulder taps'});
+X('sl_balance','Single-leg balance, eyes closed',{sets:2,secs:30,side:true,rest:15,poses:['balance','balance2'],dur:2.4,cues:['Stand on one leg, soft knee.','Close your eyes once you are steady.','Hold onto something nearby if needed.'],yt:'single leg balance eyes closed'});
+X('sl_rdl','Single-leg RDL',{reps:8,side:true,rest:45,poses:['slTop','slBot'],avoid:['back'],dur:3,cues:['Stand on one leg, soft knee.','Tip forward as the back leg reaches behind you.','Hips stay square to the floor.'],yt:'single leg rdl form'});
+X('sl_rdl_db','Single-leg dumbbell RDL',{req:['db'],reps:8,side:true,poses:['slTop','slBot'],prop:['db1'],avoid:['back'],dur:3,cues:['Weight in the hand opposite the standing leg.','Tip forward, back leg reaches long.','Hips square, slow and controlled.'],yt:'single leg dumbbell rdl'});
+// Mobility
+X('cat_cow','Cat-cow',{sets:2,reps:8,rest:15,poses:['cow','cat'],dur:4,cues:['Hands and knees.','Breathe in, drop the belly, look up.','Breathe out, round the back, tuck the chin.'],yt:'cat cow stretch'});
+X('open_book','Open book',{sets:2,reps:8,side:true,rest:15,poses:['bookA','bookB'],dur:4,cues:['Lie on your side, knees bent and stacked.','Open the top arm across to the other side.','Follow your hand with your eyes, breathe out.'],yt:'open book stretch thoracic'});
+X('hip_9090','90/90 hip stretch',{sets:2,reps:6,side:true,rest:15,poses:['n90','n90lean'],dur:4,cues:['Sit with both knees bent at 90 degrees.','Sit tall and lean over the front shin.','Switch sides by rotating the knees over.'],yt:'90 90 hip stretch'});
+X('hip_flexor','Half-kneeling hip flexor stretch',{sets:2,secs:30,side:true,rest:15,poses:['halfKn','halfKnReach'],dur:4,cues:['One knee down, other foot forward.','Squeeze the glute of the down leg and shift forward.','Reach the same-side arm up and over.'],yt:'half kneeling hip flexor stretch'});
+X('worlds_greatest',"World's greatest stretch",{sets:2,reps:5,side:true,rest:15,poses:['lowL','lowLReach'],dur:4,cues:['Step into a deep lunge, hands on the floor.','Rotate and reach the inside arm to the sky.','Hold 2 sec, back down, repeat.'],yt:'worlds greatest stretch'});
+X('thread_needle','Thread the needle',{sets:2,reps:8,side:true,rest:15,poses:['threadIn','threadOut'],dur:4,cues:['Hands and knees.','Slide one arm under your body, then open it to the sky.','Move from your mid-back, not the low back.'],yt:'thread the needle stretch'});
+X('deep_squat','Deep squat hold',{sets:2,secs:30,rest:20,poses:['squatFwd','squatFwd2'],avoid:['knee'],dur:3,cues:['Sit into the deepest squat you can.','Hold onto a post or door frame if needed.','Push the knees out with the elbows.'],yt:'deep squat hold mobility'});
+X('club_rot','Club rotations',{sets:2,reps:10,side:true,rest:15,poses:['clubShA','clubShB'],prop:['clubSh'],dur:2.6,cues:['Club across your shoulders, golf posture.','Turn back and through like a swing.','Keep the hips steady, let the chest turn.'],yt:'golf club shoulder rotation stretch'});
+// Warmup
+X('arm_circles','Arm circles',{sets:1,reps:10,per:'each way',rest:0,poses:['armsOut','armsOutUp'],dur:1.2,cues:['Arms straight out to the sides.','Small circles growing bigger.','Forward, then backward.'],yt:'arm circles warm up'});
+X('leg_swings','Leg swings',{sets:1,reps:10,side:true,rest:0,poses:['swA','swB'],dur:1.4,cues:['Hold your cart or a club for balance.','Swing one leg front to back, relaxed.','Then side to side.'],yt:'leg swings warm up'});
+X('hip_circles','Hip circles',{sets:1,reps:8,per:'each way',rest:0,poses:['hipsA','hipsB'],dur:1.6,cues:['Hands on hips, feet wide.','Draw big circles with your hips.','Both directions.'],yt:'hip circles warm up'});
+X('lunge_rot','Lunge with rotation',{sets:1,reps:5,side:true,rest:0,poses:['splitTop','splitBotRot'],avoid:['knee'],dur:2.6,cues:['Step into a lunge.','Rotate your chest over the front leg.','Step through and switch.'],yt:'lunge with rotation warm up'});
+X('half_swings','Half swings, building speed',{sets:1,reps:10,rest:0,poses:['addr','halfBack'],prop:['club'],dur:2,cues:['Start with a wedge, hip to hip.','Build speed a little every swing.','Smooth, not hard.'],yt:'golf warm up half swings'});
+X('full_swings','Full swings at 80%',{sets:1,reps:6,rest:0,poses:['halfBack','finishThru'],prop:['club'],dur:2,cues:['Move up to a mid iron or driver.','Full turn, 80 percent effort.','Hold your finish each time.'],yt:'golf warm up routine before round'});
+
+/* ---------- programs ---------- */
+const PROGRAMS={
+  power:{name:'Power & Speed',short:'Power',color:'#ff8a3d',blurb:'Jumps, throws and fast rotations to add clubhead speed.',tpl:[
+    [['box_jump','jump_squat','glute_bridge'],['mb_throw','cable_chop','band_chop','db_chop','overspeed'],['trapbar_dl','db_dl','kb_swing','broad_jump','sl_bridge'],['mb_slam','plyo_push','band_punch','pushup'],['pallof_cable','pallof_band','dead_bug'],['sl_rdl_db','sl_rdl','bird_dog'],['overspeed']],
+    [['skater','glute_bridge'],['overspeed'],['landmine_rot','band_punch','db_chop','cable_chop','band_chop'],['goblet_squat','kb_swing','broad_jump','sl_bridge'],['plyo_push','pushup'],['side_plank','plank'],['lat_lunge','sl_balance']]
+  ]},
+  core:{name:'Core & Balance',short:'Core',color:'#4fb8ff',blurb:'A stable base so your swing repeats. Anti-rotation, single-leg work and holds.',tpl:[
+    [['goblet_squat','bw_squat'],['sl_rdl_db','sl_rdl','sl_bridge'],['pallof_cable','pallof_band','plank_tap','bird_dog'],['suitcase','sl_balance'],['dead_bug'],['side_plank','plank'],['bird_dog'],['plank']],
+    [['trapbar_dl','db_dl','glute_bridge'],['goblet_lat','lat_lunge','sl_bridge'],['cable_chop','band_chop','db_chop','dead_bug'],['farmer','side_plank'],['sl_balance'],['bird_dog'],['plank_tap','plank'],['dead_bug']]
+  ]},
+  mobility:{name:'Flexibility & Mobility',short:'Mobility',color:'#b48cff',blurb:'Hips, mid-back and shoulders. A bigger, easier turn.',tpl:[
+    [['cat_cow'],['open_book'],['hip_9090'],['hip_flexor'],['worlds_greatest'],['thread_needle'],['deep_squat','hip_9090'],['club_rot']],
+    [['cat_cow'],['thread_needle'],['worlds_greatest'],['hip_9090'],['open_book'],['hip_flexor'],['club_rot'],['deep_squat','cat_cow']]
+  ]},
+  strength:{name:'Strength',short:'Strength',color:'#3fd47a',blurb:'Full-body strength so you feel as good on 18 as on 1.',tpl:[
+    [['goblet_squat','bw_squat','glute_bridge'],['trapbar_dl','db_dl','sl_bridge'],['db_row','cable_row','band_row','prone_w'],['db_bench','pushup'],['split_db','split_squat','sl_bridge'],['farmer','side_plank'],['pallof_cable','pallof_band','dead_bug'],['pull_apart','prone_w']],
+    [['trapbar_dl','db_dl','glute_bridge'],['goblet_squat','bw_squat'],['db_rdl','sl_rdl','sl_bridge'],['lat_pd','db_row','band_row','prone_w'],['db_step_up','step_up','glute_bridge'],['suitcase','bird_dog'],['pushup','db_bench'],['goblet_lat','lat_lunge']]
+  ]},
+  warmup:{name:'Pre-round Warmup',short:'Warmup',color:'#f5c84c',single:true,blurb:'10 minutes before you tee off. Bodyweight and a club, no setup.',tpl:[
+    [['arm_circles'],['leg_swings'],['hip_circles'],['bw_squat'],['lunge_rot','hip_circles'],['club_rot'],['half_swings'],['full_swings']]
+  ]}
+};
+const PROG_ORDER=['power','core','mobility','strength','warmup'];
+const WEEKS=6;
+const ICONS={
+  power:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  core:'<circle cx="12" cy="12" r="8"/><circle cx="12" cy="12" r="3"/>',
+  mobility:'<path d="M4 18c4-10 12-10 16 0"/><path d="M8 18c2-5 6-5 8 0"/>',
+  strength:'<path d="M3 10v4M6 7v10M18 7v10M21 10v4M6 12h12"/>',
+  warmup:'<path d="M12 3v10"/><path d="M12 3l7 3-7 3"/><path d="M5 21c2-3 12-3 14 0"/>'
+};
+const icon=(pid,c)=>`<svg viewBox="0 0 24 24" width="26" height="26" fill="none" stroke="${c||PROGRAMS[pid].color}" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${ICONS[pid]}</svg>`;
+
+function availFor(env,equip){return env==='gym'?['bw','band','db','cable','mb','bar','box','bench']:['bw'].concat(equip||[])}
+function capFor(pid){
+  if(pid==='warmup')return 99;
+  const pr=S.profile||{};
+  const base=pr.count||{20:4,30:5,45:6,60:7}[pr.len]||5;
+  return pid==='mobility'?Math.min(8,base+2):base;
+}
+function target(ex,pid,week){
+  const lvl=(S.profile&&S.profile.level)||'intermediate';
+  let sets=ex.sets,reps=ex.reps,secs=ex.secs,rest=ex.rest;
+  if(pid==='warmup')return{sets:1,reps,secs,rest:0};
+  if(pid!=='mobility'){
+    if(lvl==='beginner')sets=Math.max(2,sets-1);
+    if(lvl==='advanced')sets=sets+1;
+  }
+  if(week>=3&&week<=4){if(secs)secs+=5;else if(pid!=='power')reps+=2}
+  if(week===5){sets+=1;if(secs)secs+=10;else if(pid!=='power')reps+=2}
+  if(week===6){sets=Math.max(1,sets-1)}
+  return{sets,reps,secs,rest};
+}
+function pickExercises(pid,tplIdx,env,equip){
+  const prog=PROGRAMS[pid];
+  const avail=availFor(env,equip);
+  const lim=(S.profile&&S.profile.limits)||[];
+  const used=new Set(),out=[];
+  const tpl=prog.tpl[tplIdx%prog.tpl.length];
+  for(const slot of tpl){
+    const id=slot.find(i=>{const e=EX[i];return e&&!used.has(i)&&e.req.every(r=>avail.includes(r))&&!e.avoid.some(a=>lim.includes(a))});
+    if(id){used.add(id);out.push(id)}
+    if(out.length>=capFor(pid))break;
+  }
+  return out;
+}
+
+/* ---------- plans ---------- */
+function makePlan(pid,env,equip,days,time,start){
+  const sessions=[];const s=pkey(start);let n=0;
+  for(let i=0;i<WEEKS*7;i++){
+    const d=addDays(s,i);
+    if(days.includes(d.getDay())){sessions.push({date:dkey(d),week:Math.floor(i/7)+1,tpl:n%PROGRAMS[pid].tpl.length,done:null});n++}
+  }
+  return{id:uid(),pid,env,equip,days,time,start,sessions,created:Date.now()};
+}
+const nextSession=p=>p.sessions.findIndex(x=>!x.done);
+const planOf=pid=>S.plans.find(p=>p.pid===pid);
+function planWeek(p){const i=nextSession(p);return i<0?WEEKS:p.sessions[i].week}
+
+/* ---------- day status ---------- */
+function dayStatus(k){
+  if(S.logs.some(l=>l.date===k))return'done';
+  const t=todayKey();let sched=false,missed=false;
+  for(const p of S.plans)for(const s of p.sessions){
+    if(s.date!==k)continue;sched=true;
+    if(k<t&&(!s.done||s.done>k))missed=true;
+  }
+  if(missed)return'missed';
+  if(sched&&k>=t)return'planned';
+  return'';
+}
+
+/* ---------- calendar export ---------- */
+function icsStamp(k,time,addMin){
+  const d=pkey(k);const[h,m]=time.split(':').map(Number);d.setHours(h,m+(addMin||0),0,0);
+  return d.getFullYear()+pad(d.getMonth()+1)+pad(d.getDate())+'T'+pad(d.getHours())+pad(d.getMinutes())+'00';
+}
+function estMin(pid){const n=Math.min(capFor(pid),PROGRAMS[pid].tpl[0].length);return pid==='mobility'?Math.max(15,n*3):Math.max(25,n*7)}
+function upcoming(p){const t=todayKey();return p.sessions.filter(s=>!s.done&&s.date>=t)}
+function sessionTitle(p,s){const pr=PROGRAMS[p.pid];return`Golf ${pr.short}: Week ${s.week}, Workout ${'ABC'[s.tpl]}`}
+function buildICS(p){
+  const len=estMin(p.pid);
+  const now=new Date();const stamp=now.getUTCFullYear()+pad(now.getUTCMonth()+1)+pad(now.getUTCDate())+'T'+pad(now.getUTCHours())+pad(now.getUTCMinutes())+'00Z';
+  const L=['BEGIN:VCALENDAR','VERSION:2.0','PRODID:-//Swing Fit//EN','CALSCALE:GREGORIAN','METHOD:PUBLISH','X-WR-CALNAME:Golf workouts'];
+  upcoming(p).forEach((s,i)=>{
+    L.push('BEGIN:VEVENT','UID:'+p.id+'-'+s.date+'@swingfit','DTSTAMP:'+stamp,'DTSTART:'+icsStamp(s.date,p.time),'DTEND:'+icsStamp(s.date,p.time,len),'SUMMARY:'+sessionTitle(p,s),'DESCRIPTION:Open Swing Fit and tap Start workout.','BEGIN:VALARM','ACTION:DISPLAY','DESCRIPTION:Golf workout','TRIGGER:-PT15M','END:VALARM','END:VEVENT');
+  });
+  L.push('END:VCALENDAR');
+  return L.join('\r\n');
+}
+function addApple(p){
+  if(!upcoming(p).length){toast('No upcoming workouts to add');return}
+  const blob=new Blob([buildICS(p)],{type:'text/calendar'});
+  const url=URL.createObjectURL(blob);
+  const a=document.createElement('a');a.href=url;
+  const ios=/iPad|iPhone|iPod/.test(navigator.userAgent)||(navigator.platform==='MacIntel'&&navigator.maxTouchPoints>1);
+  if(!ios)a.download='golf-'+p.pid+'-plan.ics';
+  a.target='_blank';a.rel='noopener';document.body.appendChild(a);a.click();a.remove();
+  setTimeout(()=>URL.revokeObjectURL(url),60000);
+}
+function addGoogle(p){
+  const up=upcoming(p);if(!up.length){toast('No upcoming workouts to add');return}
+  const len=estMin(p.pid);const f=up[0];
+  const rr='RRULE:FREQ=WEEKLY;BYDAY='+p.days.slice().sort().map(d=>ICSDAY[d]).join(',')+';COUNT='+up.length;
+  const tz=Intl.DateTimeFormat().resolvedOptions().timeZone||'America/Vancouver';
+  const u='https://calendar.google.com/calendar/render?action=TEMPLATE&text='+encodeURIComponent('Golf '+PROGRAMS[p.pid].short+' workout')+'&dates='+icsStamp(f.date,p.time)+'/'+icsStamp(f.date,p.time,len)+'&ctz='+encodeURIComponent(tz)+'&recur='+encodeURIComponent(rr)+'&details='+encodeURIComponent('Open Swing Fit and tap Start workout.');
+  window.open(u,'_blank');
+}
+
+/* ---------- questionnaire ---------- */
+const QS=[
+  {k:'name',q:"First, what should I call you?",t:'text',ph:'First name'},
+  {k:'level',q:'How much strength training have you done?',t:'single',o:[['beginner','New to it','Little or no gym time'],['intermediate','Some','On and off, I know the basics'],['advanced','A lot','Training 2+ times a week now']]},
+  {k:'days',q:'How many days a week can you train?',t:'single',o:[[2,'2 days'],[3,'3 days'],[4,'4 days'],[5,'5 days']]},
+  {k:'env',q:'Where will you mostly work out?',t:'single',o:[['gym','Gym','Barbells, dumbbells, cables, med balls'],['home','Home','Pick your equipment next']]},
+  {k:'equip',q:'What do you have at home?',t:'multi',when:a=>a.env==='home',o:[['db','Dumbbells or kettlebells','Unlocks goblet squats, deadlifts, rows'],['band','Resistance bands'],['none','Just bodyweight']]},
+  {k:'count',q:'How many exercises per workout?',t:'single',o:[[4,'4 exercises','About 30 min'],[5,'5 exercises','About 40 min'],[6,'6 exercises','About 45 min'],[7,'7 exercises','About 55 min'],[8,'8 exercises','About an hour']]},
+  {k:'limits',q:'Anything that bugs you? I will swap out exercises that load it.',t:'multi',o:[['back','Lower back'],['knee','Knees'],['shoulder','Shoulders'],['wrist','Wrists or elbows'],['none','Nothing, all good']]},
+  {k:'goal',q:'What do you want most?',t:'single',o:[['power','More distance','Clubhead speed'],['core','More consistency','A stable, repeatable swing'],['mobility','Less stiffness','A fuller, easier turn'],['strength','Last all 18','Strength and stamina']]},
+  {k:'rounds',q:'How often do you play?',t:'single',o:[['1','A few times a season'],['2','A couple times a month'],['3','About once a week'],['4','2+ times a week']]},
+  {k:'hcp',q:"What's your handicap? (optional)",t:'number',ph:'e.g. 14',opt:true},
+  {k:'time',q:'What time do you usually want to work out?',t:'time',sub:'Used for your calendar reminders. You can change it per plan.'}
+];
+let Q={i:0,a:{}};
+function startQuiz(){Q={i:0,a:S.profile?JSON.parse(JSON.stringify(S.profile)):{time:'07:00',limits:[]}};if(!Q.a.time)Q.a.time='07:00';if(!Q.a.limits)Q.a.limits=[];renderQuiz()}
+function renderQuiz(){
+  const q=QS[Q.i],v=Q.a[q.k];
+  let body='';
+  if(q.t==='text'||q.t==='number')body=`<input class="field" id="qf" ${q.t==='number'?'type="number" inputmode="decimal"':'type="text" autocomplete="given-name"'} placeholder="${q.ph||''}" value="${esc(v==null?'':v)}">`;
+  if(q.t==='time')body=`<input class="field" id="qf" type="time" value="${esc(v||'07:00')}">`;
+  if(q.t==='single'||q.t==='multi')body=q.o.map(o=>{
+    const on=q.t==='multi'?((v||[]).includes(o[0])||(o[0]==='none'&&v&&v.length===0&&Q.a['_t'+q.k])):v===o[0];
+    return`<button class="opt ${on?'on':''}" data-act="qopt" data-v="${o[0]}"><b>${o[1]}</b>${o[2]?`<span>${o[2]}</span>`:''}</button>`}).join('');
+  const canNext=q.t==='single'?v!=null:q.t==='multi'?Q.a['_t'+q.k]:(q.opt||String(v||'').trim()!=='');
+  app.innerHTML=`<div class="quiz">
+    <div class="row"><button class="p-x" data-act="qback" style="visibility:${Q.i?'visible':'hidden'}">&#8249;</button><div class="sp bar"><i style="width:${(Q.i+1)/QS.length*100}%"></i></div><span class="small muted">${Q.i+1}/${QS.length}</span></div>
+    ${Q.i===0&&!S.profile?'<div class="tag" style="margin-top:28px;color:var(--green)">Swing Fit</div><div class="muted" style="margin-top:6px">A few quick questions so your programs fit you.</div>':''}
+    <h2 class="qtitle">${q.q}</h2>${q.sub?`<p class="muted" style="margin-top:-8px">${q.sub}</p>`:''}
+    <div>${body}</div><div class="sp"></div>
+    <button class="btn" data-act="qnext" ${canNext?'':'disabled'} style="margin-top:20px">${Q.i===QS.length-1?'Finish':(q.opt&&!v?'Skip':'Next')}</button>
+  </div>`;
+  const f=document.getElementById('qf');
+  if(f){f.addEventListener('input',()=>{Q.a[q.k]=q.t==='number'?(f.value===''?'':Number(f.value)):f.value;const b=app.querySelector('[data-act=qnext]');const ok=q.opt||String(f.value).trim()!=='';b.disabled=!ok;if(q.opt)b.textContent=f.value?'Next':'Skip'});if(q.t!=='time')setTimeout(()=>f.focus(),50)}
+}
+function quizAct(act,el){
+  const q=QS[Q.i];
+  if(act==='qopt'){
+    let v=el.dataset.v;const o=q.o.find(x=>String(x[0])===v);v=o[0];
+    if(q.t==='single'){Q.a[q.k]=v;renderQuiz();setTimeout(()=>quizAct('qnext'),180);return}
+    let arr=Q.a[q.k]||[];Q.a['_t'+q.k]=true;
+    if(v==='none')arr=[];else arr=arr.includes(v)?arr.filter(x=>x!==v):arr.concat(v);
+    Q.a[q.k]=arr;renderQuiz();return;
+  }
+  if(act==='qback'){do{Q.i--}while(Q.i>0&&QS[Q.i].when&&!QS[Q.i].when(Q.a));Q.i=Math.max(0,Q.i);renderQuiz();return}
+  if(act==='qnext'){
+    if(q.t==='time'&&!Q.a.time)Q.a.time='07:00';
+    let j=Q.i+1;while(j<QS.length&&QS[j].when&&!QS[j].when(Q.a))j++;
+    if(j<QS.length){Q.i=j;if(QS[j].t==='multi'&&Q.a[QS[j].k])Q.a['_t'+QS[j].k]=true;renderQuiz();return}
+    const p=Object.assign({},Q.a);Object.keys(p).forEach(k=>{if(k[0]==='_')delete p[k]});p.name=String(p.name||'').trim();if(p.env!=='home')p.equip=[];delete p.len;
+    const fresh=!S.profile;S.profile=p;save();tab='today';render();
+    if(fresh)setTimeout(()=>openProgram(p.goal),250);
+  }
+}
+
+/* ---------- main tabs ---------- */
+let tab='today';let calM=new Date();calM.setDate(1);
+const app=document.getElementById('app'),layer=document.getElementById('layer');
+const TABICON={
+  today:'<path d="M3 11l9-7 9 7v9a1 1 0 0 1-1 1h-5v-6h-6v6H4a1 1 0 0 1-1-1z"/>',
+  programs:'<rect x="3" y="4" width="18" height="4" rx="1.5"/><rect x="3" y="10" width="18" height="4" rx="1.5"/><rect x="3" y="16" width="18" height="4" rx="1.5"/>',
+  cal:'<rect x="3" y="5" width="18" height="16" rx="2"/><path d="M3 10h18M8 3v4M16 3v4"/>',
+  prog:'<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8"/>',
+  me:'<circle cx="12" cy="8" r="4"/><path d="M4 21c1-4 4-6 8-6s7 2 8 6"/>'
+};
+function tabbar(){return'<nav class="tabbar">'+[['today','Today'],['programs','Programs'],['cal','Calendar'],['prog','Progress'],['me','Profile']].map(([k,l])=>`<button data-act="tab" data-v="${k}" class="${tab===k?'on':''}"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">${TABICON[k]}</svg>${l}</button>`).join('')+'</nav>'}
+
+function render(){
+  if(!S.profile){startQuiz();return}
+  let h='';
+  if(tab==='today')h=viewToday();
+  if(tab==='programs')h=viewPrograms();
+  if(tab==='cal')h=viewCal();
+  if(tab==='me')h=viewMe();
+  if(tab==='prog')h=viewProg();
+  app.innerHTML=`<div class="wrap">${h}</div>${tabbar()}`;
+  if(S.active&&!document.querySelector('.player'))renderPlayer();
+}
+
+function planCard(p){
+  const pr=PROGRAMS[p.pid];const i=nextSession(p);const t=todayKey();
+  const done=p.sessions.filter(s=>s.done).length,total=p.sessions.length;
+  const skipped=p.sessions.filter(s=>s.date<t&&(!s.done||s.done>s.date)).length;
+  if(i<0)return`<div class="card"><div class="row"><div class="ic">${icon(p.pid)}</div><div class="sp"><div class="tag">${pr.name}</div><h3 style="margin-top:4px">Plan complete</h3></div></div><p class="muted small">${done} of ${total} workouts done. Nice work. Start it again or try another program.</p><button class="btn ghost" data-act="openprog" data-v="${p.pid}">Restart or change</button></div>`;
+  const s=p.sessions[i];
+  const isToday=p.sessions.some(x=>x.date===t&&!x.done);
+  const when=isToday?'Today':(s.date<t?'Overdue from '+fmtDate(s.date):fmtDate(s.date));
+  const exs=pickExercises(p.pid,s.tpl,p.env,p.equip).map(id=>EX[id].name);
+  return`<div class="card">
+    <div class="row"><div>${icon(p.pid)}</div><div class="sp"><div class="tag">${pr.name} · Week ${s.week} of ${WEEKS}</div><h3 style="margin-top:4px;font-size:21px">Workout ${'ABC'[s.tpl]} <span class="muted" style="font-weight:500;font-size:16px">· ${when}</span></h3></div></div>
+    <p class="muted small" style="margin:10px 0 14px">${exs.slice(0,4).join(', ')}${exs.length>4?' +'+(exs.length-4)+' more':''}</p>
+    <button class="btn" data-act="start" data-v="${p.id}">&#9654;&nbsp; Start workout</button>
+    <div class="row small muted" style="margin-top:12px"><span>${done}/${total} done</span>${skipped?`<span style="color:var(--yellow)">${skipped} skipped</span>`:''}<span class="sp"></span><span>${p.env==='gym'?'Gym':(p.equip.length?'Home: '+p.equip.map(e=>e==='db'?'weights':'bands').join(' + '):'Home: bodyweight')}</span></div>
+  </div>`;
+}
+function viewToday(){
+  const d=new Date();const name=S.profile.name?', '+esc(S.profile.name):'';
+  let h=`<div class="small muted">${d.toLocaleDateString('en-CA',{weekday:'long',month:'long',day:'numeric'})}</div><h1 class="hello">Happy ${DOWL[d.getDay()]}${name}!</h1>`;
+  const t=todayKey();const doneToday=S.logs.filter(l=>l.date===t);
+  if(S.rounds.includes(t)&&!doneToday.some(l=>l.pid==='warmup'))h+=`<div class="card" style="border-color:#5a4a15;background:#1d1a0c"><div class="tag" style="color:var(--yellow)">Round day</div><h3 style="margin:6px 0 4px">Warm up before you tee off</h3><p class="muted small" style="margin:0 0 12px">10 minutes, bodyweight and a club. Do it at the course.</p><button class="btn" style="background:var(--yellow)" data-act="startwarm">&#9654;&nbsp; Start warmup</button></div>`;
+  else if(S.rounds.includes(dkey(addDays(new Date(),1))))h+=`<div class="card"><div class="tag">Round tomorrow</div><p class="muted small" style="margin:6px 0 0">Heavy leg days are kept off today and tomorrow so your legs are fresh.</p></div>`;
+  if(doneToday.length)h+=`<div class="card" style="border-color:var(--green-d);background:#0f2016"><div class="row"><span style="font-size:22px">&#10003;</span><div><b>Logged today</b><div class="small muted">${doneToday.map(l=>esc(l.title)+' · '+mmss(l.dur)).join('<br>')}</div></div></div></div>`;
+  if(S.plans.length)h+=S.plans.map(planCard).join('');
+  else{
+    const g=S.profile.goal||'power';
+    h+=`<div class="card"><div class="tag">Recommended for you</div><div class="row" style="margin:10px 0"><div>${icon(g)}</div><h3 style="font-size:21px">${PROGRAMS[g].name}</h3></div><p class="muted small" style="margin-top:0">${PROGRAMS[g].blurb}</p><button class="btn" data-act="openprog" data-v="${g}">Set it up</button><button class="btn ghost" style="margin-top:8px" data-act="tab" data-v="programs">See all programs</button></div>`;
+  }
+  h+=`<button class="list-btn" data-act="startwarm"><div class="ic" style="background:#2a2410">${icon('warmup')}</div><div class="sp"><h3>Pre-round warmup</h3><div class="small muted">10 min, bodyweight + a club</div></div><span class="chev">&#8250;</span></button>`;
+  const recent=S.logs.slice(-3).reverse();
+  if(recent.length)h+=`<div class="tag" style="margin-top:22px">Recent</div>`+recent.map(l=>`<button class="list-btn" data-act="day" data-v="${l.date}" style="padding:12px"><div class="sp"><b>${esc(l.title)}</b><div class="small muted">${fmtDate(l.date)} · ${mmss(l.dur)} · ${(n=>n+(n===1?' set':' sets'))(l.ex.reduce((a,e)=>a+e.sets.length,0))}</div></div><span class="chev">&#8250;</span></button>`).join('');
+  return h;
+}
+function viewPrograms(){
+  return`<h1>Programs</h1><p class="muted">6-week golf plans. Pick one or run a couple at once.</p>`+PROG_ORDER.map(pid=>{
+    const pr=PROGRAMS[pid],p=planOf(pid);
+    const sub=pr.single?'One session, anytime':(p?`<span style="color:var(--green)">Active · week ${planWeek(p)} of ${WEEKS}</span>`:WEEKS+' weeks'+(S.profile.goal===pid?' · <span style="color:var(--green)">Recommended</span>':''));
+    return`<button class="list-btn" data-act="openprog" data-v="${pid}"><div class="ic" style="background:${pr.color}1f">${icon(pid)}</div><div class="sp"><h3>${pr.name}</h3><div class="small muted">${sub}</div><div class="small muted" style="margin-top:3px">${pr.blurb}</div></div><span class="chev">&#8250;</span></button>`}).join('');
+}
+function viewCal(){
+  const y=calM.getFullYear(),m=calM.getMonth();
+  const first=new Date(y,m,1),dim=new Date(y,m+1,0).getDate(),t=todayKey();
+  let cells=DOW.map(d=>`<div class="dow">${d[0]}</div>`).join('');
+  for(let i=0;i<first.getDay();i++)cells+='<div class="bub out"></div>';
+  let mDone=0,mMiss=0;
+  for(let d=1;d<=dim;d++){
+    const k=dkey(new Date(y,m,d));const st=dayStatus(k);
+    if(st==='done')mDone++;if(st==='missed')mMiss++;
+    cells+=`<button class="bub ${st} ${k===t?'today':''} ${S.rounds.includes(k)?'rd':''}" data-act="day" data-v="${k}">${d}</button>`;
+  }
+  // streak in weeks with at least one workout
+  let streak=0;const wk=d=>{const x=new Date(d);x.setDate(x.getDate()-x.getDay());return dkey(x)};
+  const weeks=new Set(S.logs.map(l=>wk(pkey(l.date))));
+  let cur=new Date();if(!weeks.has(wk(cur)))cur=addDays(cur,-7);
+  while(weeks.has(wk(cur))){streak++;cur=addDays(cur,-7)}
+  return`<h1>Calendar</h1>
+  <div class="card">
+    <div class="row" style="margin-bottom:14px"><button class="p-x" data-act="calm" data-v="-1">&#8249;</button><h3 class="sp" style="text-align:center">${first.toLocaleDateString('en-CA',{month:'long',year:'numeric'})}</h3><button class="p-x" data-act="calm" data-v="1">&#8250;</button></div>
+    <div class="cal">${cells}</div>
+    <div class="legend"><span><i style="background:var(--green)"></i>Done</span><span><i style="background:var(--yellow)"></i>Skipped</span><span><i style="border:2px dashed #5b6e62"></i>Scheduled</span><span><i style="background:#000;border:1px solid #2a3a30"></i>Rest</span><span><i style="background:#fff;width:9px;height:9px"></i>Golf round</span></div>
+  </div>
+  <div class="stats"><div class="stat"><b>${mDone}</b><span>this month</span></div><div class="stat"><b style="color:${mMiss?'var(--yellow)':'inherit'}">${mMiss}</b><span>skipped</span></div><div class="stat"><b>${streak}</b><span>week streak</span></div></div>
+  <div class="stat" style="margin-top:10px"><b>${S.logs.length}</b><span>total workouts logged</span></div>`;
+}
+function viewMe(){
+  const p=S.profile;const lv={beginner:'New to it',intermediate:'Some',advanced:'A lot'}[p.level]||'';
+  const lim=(p.limits||[]).length?p.limits.map(l=>({back:'Lower back',knee:'Knees',shoulder:'Shoulders',wrist:'Wrists/elbows'}[l])).join(', '):'None';
+  const r=(k,v)=>`<div class="row" style="padding:10px 0;border-top:1px solid var(--line)"><span class="muted">${k}</span><span class="sp"></span><b>${esc(v)}</b></div>`;
+  return`<h1>Profile</h1><div class="card" style="padding-top:6px">
+  ${r('Name',p.name||'')}${r('Experience',lv)}${r('Days a week',p.days)}${r('Where',p.env==='home'?'Home'+((p.equip||[]).length?' ('+p.equip.map(e=>e==='db'?'weights':'bands').join(', ')+')':' (bodyweight)'):(p.env==='gym'?'Gym':'Not set'))}${r('Exercises per workout',p.count||{20:4,30:5,45:6,60:7}[p.len]||5)}${r('Watch-outs',lim)}${r('Main goal',PROGRAMS[p.goal]?PROGRAMS[p.goal].name:'')}${p.hcp!==''&&p.hcp!=null?r('Handicap',p.hcp):''}${r('Usual time',fmtTime(p.time))}
+  </div>
+  <button class="btn ghost" data-act="requiz">Retake questionnaire</button>
+  <div class="card"><b>Get it on your home screen</b><p class="muted small" style="margin:6px 0 0">In Safari tap Share, then <b>Add to Home Screen</b>. It opens full screen and works offline. Your workouts are saved on this phone only.</p></div>
+  <div class="row"><button class="btn ghost" data-act="backup">Back up data</button><button class="btn ghost" data-act="restore">Restore</button></div>
+  <button class="btn danger" style="margin-top:22px" data-act="reset">Erase everything</button>
+  <p class="small muted" style="text-align:center;margin-top:20px">Swing Fit · version ${APP_BUILD}<br>Not medical advice. Stop if something hurts.</p>`;
+}
+function fmtTime(t){if(!t)return'';const[h,m]=t.split(':').map(Number);return((h%12)||12)+':'+pad(m)+(h<12?' am':' pm')}
+
+/* ---------- sheets ---------- */
+function sheet(html){layer.innerHTML=`<div class="sheet-bg" data-act="closebg"><div class="sheet"><div class="grab"></div>${html}</div></div>`}
+function closeSheet(){layer.innerHTML=''}
+let SU=null;
+function openProgram(pid){
+  const pr=PROGRAMS[pid],p=planOf(pid);
+  const preview=pickExercises(pid,0,S.profile.env||'gym',S.profile.equip||[]).map(id=>EX[id].name);
+  let h=`<div class="row"><div>${icon(pid)}</div><h2 class="sp">${pr.name}</h2></div><p class="muted">${pr.blurb}</p>`;
+  if(pr.single){
+    h+=`<div class="card"><div class="tag">The routine</div><ol class="cues" style="margin-top:8px">${pickExercises(pid,0,'home',[]).map(id=>'<li>'+EX[id].name+'</li>').join('')}</ol></div><button class="btn" data-act="startwarm">&#9654;&nbsp; Start warmup</button>`;
+  }else if(p){
+    const t=todayKey();const left=upcoming(p).length;
+    h+=`<div class="card"><div class="row"><span class="pill g">Active</span><span class="pill">Week ${planWeek(p)} of ${WEEKS}</span><span class="pill">${p.days.slice().sort().map(d=>DOW[d]).join(' ')}</span></div><p class="muted small" style="margin-bottom:0">${left} workouts left. Reminders at ${fmtTime(p.time)}.</p></div>
+    <div class="tag" style="margin:16px 0 8px">Add to calendar</div>
+    <div class="row"><button class="btn ghost" data-act="apple" data-v="${p.id}">Apple Calendar</button><button class="btn ghost" data-act="google" data-v="${p.id}">Google Calendar</button></div>
+    <button class="btn" style="margin-top:12px" data-act="start" data-v="${p.id}">&#9654;&nbsp; Start next workout</button>
+    <button class="btn danger" style="margin-top:22px" data-act="endplan" data-v="${p.id}">End this plan</button>`;
+  }else{
+    h+=`<div class="card"><div class="row"><span class="pill">${WEEKS} weeks</span><span class="pill">${S.profile.days} days/wk</span><span class="pill">${Math.min(capFor(pid),pr.tpl[0].length)} exercises</span></div><p class="small muted" style="margin-bottom:6px">Weights go first. Reps build in weeks 3 to 5, week 6 is a lighter week to recover.</p><div class="tag" style="margin-top:12px">Sample day</div><ol class="cues" style="margin-top:6px">${preview.map(n=>'<li>'+n+'</li>').join('')}</ol><p class="small muted" style="margin:6px 0 0">Exercises change to match your equipment.</p></div>
+    <button class="btn" data-act="setup" data-v="${pid}">Set up this program</button>`;
+  }
+  sheet(h);
+}
+function defaultDays(n){return{2:[2,4],3:[1,3,5],4:[1,2,4,5],5:[1,2,3,4,5]}[n]||[1,3,5]}
+function setupStart(pid){const pe=S.profile.env;SU={pid,step:pe?'sched':'env',env:pe||null,equip:pe==='home'?(S.profile.equip||[]).slice():[],bwOnly:pe==='home'&&!(S.profile.equip||[]).length,days:defaultDays(S.profile.days),time:S.profile.time||'07:00',start:todayKey()};renderSetup()}
+function renderSetup(){
+  const pr=PROGRAMS[SU.pid];let h=`<div class="tag">${pr.name}</div>`;
+  if(SU.step==='env'){
+    h+=`<h2 style="margin:8px 0 16px">Where are you working out?</h2>
+    <button class="opt" data-act="env" data-v="gym"><b>Gym</b><span>Cables, med balls, bars, benches</span></button>
+    <button class="opt" data-act="env" data-v="home"><b>Home</b><span>Pick what you have next</span></button>`;
+  }
+  if(SU.step==='equip'){
+    const o=(k,l,s)=>`<button class="opt ${SU.equip.includes(k)?'on':''}" data-act="eq" data-v="${k}"><b>${l}</b><span>${s}</span></button>`;
+    h+=`<h2 style="margin:8px 0 6px">What do you have at home?</h2><p class="muted" style="margin-top:0">Tap all that apply.</p>
+    ${o('band','Resistance bands','Loop or handle bands, anchor in a door')}${o('db','Weights','Dumbbells or kettlebells')}
+    <button class="opt ${SU.equip.length===0&&SU.bwOnly?'on':''}" data-act="eq" data-v="bw"><b>Just bodyweight</b><span>No equipment, a golf club helps</span></button>
+    <button class="btn" style="margin-top:14px" data-act="eqnext" ${SU.equip.length||SU.bwOnly?'':'disabled'}>Next</button>
+    <button class="btn ghost" style="margin-top:8px" data-act="sustep" data-v="env">Back</button>`;
+  }
+  if(SU.step==='sched'){
+    const p=makePlan(SU.pid,SU.env,SU.equip,SU.days,SU.time,SU.start);
+    const n=p.sessions.length;
+    h+=`<h2 style="margin:8px 0 4px">When do you want to train?</h2><p class="muted" style="margin-top:0">You said ${S.profile.days} days a week. Change it here if you like.</p>
+    <div class="row card" style="padding:12px 14px;margin:14px 0 0"><span class="sp"><b>${SU.env==='gym'?'Gym':'Home'}</b> <span class="muted small">${SU.env==='gym'?'full equipment':(SU.equip.length?SU.equip.map(e=>e==='db'?'weights':'bands').join(' + '):'bodyweight')}</span></span><button class="btn ghost sm" data-act="sustep" data-v="env">Change</button></div>
+    <label class="lbl">Days</label><div class="chips">${DOW.map((d,i)=>`<button class="chip ${SU.days.includes(i)?'on':''}" data-act="dayt" data-v="${i}">${d.slice(0,2)}</button>`).join('')}</div>
+    <div class="row" style="gap:12px"><div class="sp"><label class="lbl">Time</label><input class="inp" type="time" id="sut" value="${SU.time}"></div><div class="sp"><label class="lbl">Start</label><input class="inp" type="date" id="sud" value="${SU.start}"></div></div>
+    <p class="muted small" style="margin:16px 0">${n?`${n} workouts, ${fmtDate(p.sessions[0].date)} to ${fmtDate(p.sessions[n-1].date)}.`:'Pick at least one day.'}</p>
+    <button class="btn" data-act="create" ${n?'':'disabled'}>Create plan</button>
+    <button class="btn ghost" style="margin-top:8px" data-act="sustep" data-v="${SU.env==='home'?'equip':'env'}">Back</button>`;
+  }
+  if(SU.step==='done'){
+    const p=planOf(SU.pid);
+    h+=`<div style="text-align:center;font-size:48px;margin:6px 0">&#9971;</div><h2 style="text-align:center">You're set</h2><p class="muted" style="text-align:center">Add it to your calendar so your phone reminds you 15 minutes before each workout.</p>
+    <button class="btn" data-act="apple" data-v="${p.id}">Add to Apple Calendar</button>
+    <button class="btn ghost" style="margin-top:8px" data-act="google" data-v="${p.id}">Add to Google Calendar</button>
+    <button class="btn ghost" style="margin-top:8px" data-act="close">Done</button>`;
+  }
+  sheet(h);
+  const ti=document.getElementById('sut'),di=document.getElementById('sud');
+  if(ti)ti.onchange=()=>{SU.time=ti.value||'07:00'};
+  if(di)di.onchange=()=>{if(di.value){SU.start=di.value;renderSetup()}};
+}
+function openDay(k){
+  const logs=S.logs.filter(l=>l.date===k);const st=dayStatus(k);
+  const sched=[];S.plans.forEach(p=>p.sessions.forEach(s=>{if(s.date===k)sched.push({p,s})}));
+  let h=`<h2>${pkey(k).toLocaleDateString('en-CA',{weekday:'long',month:'long',day:'numeric'})}</h2>`;
+  h+=`<p class="muted" style="margin-top:4px">${{done:'Workout done',missed:'Scheduled but skipped',planned:'Scheduled','':'Rest day'}[st]}</p>`;
+  const isR=S.rounds.includes(k);
+  h+=`<button class="btn ${isR?'ghost':''}" style="margin:6px 0 14px" data-act="round" data-v="${k}">${isR?'Remove golf round':'&#9971;&nbsp; I\'m playing a round this day'}</button>`;
+  sched.forEach(({p,s})=>{h+=`<div class="pill" style="margin:0 6px 6px 0">${sessionTitle(p,s)}${s.done?' · done '+(s.done===k?'':fmtDate(s.done)):''}</div>`});
+  logs.forEach(l=>{
+    h+=`<div class="card"><div class="row"><b class="sp">${esc(l.title)}</b><span class="muted small">${mmss(l.dur)}</span></div>`+l.ex.map(e=>`<div class="hist-ex"><div style="font-weight:600">${esc(e.name)}</div><div class="small muted">${e.sets.map(s=>s.secs?s.secs+'s':((s.reps||0)+(s.lbs?' x '+s.lbs+' lb':''))).join(' · ')||'No sets logged'}</div></div>`).join('')+`<button class="addset" style="color:var(--red)" data-act="dellog" data-v="${l.id}">Delete this workout</button></div>`;
+  });
+  sheet(h+'<button class="btn ghost" style="margin-top:8px" data-act="close">Close</button>');
+}
+
+/* ---------- workout player ---------- */
+let tick=null,restEnd=0,restLen=0,cd=null,wake=null,actx=null;
+function beep(){try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();[0,0.22].forEach(t=>{const o=actx.createOscillator(),g=actx.createGain();o.frequency.value=880;o.connect(g);g.connect(actx.destination);g.gain.setValueAtTime(.25,actx.currentTime+t);g.gain.exponentialRampToValueAtTime(.001,actx.currentTime+t+.18);o.start(actx.currentTime+t);o.stop(actx.currentTime+t+.2)});if(navigator.vibrate)navigator.vibrate([150,80,150])}catch(e){}}
+function lastFor(id){for(let i=S.logs.length-1;i>=0;i--){const e=S.logs[i].ex.find(x=>x.id===id);if(e&&e.sets.length){const w=e.sets.filter(s=>s.lbs).map(s=>s.lbs);return{lbs:w.length?w[w.length-1]:null,reps:e.sets[e.sets.length-1].reps,secs:e.sets[e.sets.length-1].secs,date:S.logs[i].date}}}return null}
+function lastEntry(id){for(let i=S.logs.length-1;i>=0;i--){const e=S.logs[i].ex.find(x=>x.id===id);if(e&&e.sets.length)return e}return null}
+function suggestFor(id,tg,week){
+  const e=EX[id];if(!e.w)return null;const le=lastEntry(id);if(!le)return null;
+  const w=Math.max(0,...le.sets.map(s=>s.lbs||0));if(!w)return null;
+  const inc=e.req.includes('bar')?10:5,need=le.tg||tg;
+  const hit=le.sets.length>=Math.min(need.sets,tg.sets)&&le.sets.every(s=>need.secs?(s.secs||0)>=need.secs:(s.reps||0)>=need.reps);
+  if(week===6)return{lbs:w,msg:'Light week. Stay at '+w+' lb or drop a little.'};
+  if(!tg.secs&&!need.secs&&tg.reps>need.reps)return{lbs:w,msg:'Reps go up this week. Stay at '+w+' lb.'};
+  if(hit)return{lbs:w+inc,up:true,msg:'Go up '+inc+' lb. You hit every rep last time.'};
+  return{lbs:w,msg:'Stay at '+w+' lb until you hit every rep.'};
+}
+const metric=(e,s)=>e.w?(s.lbs||0):(s.secs||s.reps||0);
+const unitOf=e=>e.w?'lb':(e.secs?'sec':'reps');
+function bestPrior(id){const e=EX[id];let b=0;S.logs.forEach(l=>l.ex.forEach(x=>{if(x.id===id)x.sets.forEach(s=>{b=Math.max(b,metric(e,s))})}));return b}
+function beginWorkout(pid,planId,sIdx,env,equip,week,tplIdx){
+  const ids=pickExercises(pid,tplIdx,env,equip);
+  S.active={pid,planId,sIdx,week,start:Date.now(),page:0,title:PROGRAMS[pid].single?PROGRAMS[pid].name:PROGRAMS[pid].short+': Week '+week+', Workout '+'ABC'[tplIdx],
+    ex:ids.map(id=>{const e=EX[id],tg=target(e,pid,week),last=lastFor(id),sug=suggestFor(id,tg,week);const w0=sug?sug.lbs:(e.w&&last&&last.lbs?last.lbs:'');return{id,tg,sug,sets:Array.from({length:tg.sets},()=>({reps:'',lbs:e.w?w0:'',secs:'',ok:false}))}})};
+  save();closeSheet();renderPlayer();
+  try{if(navigator.wakeLock)navigator.wakeLock.request('screen').then(w=>wake=w).catch(()=>{})}catch(e){}
+}
+function startPlan(planId){
+  const p=S.plans.find(x=>x.id===planId);if(!p)return;
+  if(S.active){toast('Finish your current workout first');renderPlayer();return}
+  const i=nextSession(p);if(i<0){toast('Plan complete');return}
+  const s=p.sessions[i];beginWorkout(p.pid,p.id,i,p.env,p.equip,s.week,s.tpl);
+}
+function renderPlayer(){
+  const A=S.active;if(!A)return;
+  let el=document.querySelector('.player');
+  if(!el){el=document.createElement('div');el.className='player';document.body.appendChild(el);el.addEventListener('input',onPlayerInput);addSwipe(el)}
+  const ex=A.ex[A.page],e=EX[ex.id],tg=ex.tg,last=lastFor(ex.id);
+  const per=e.per||(e.side?'each side':'');
+  const tgt=tg.secs?`${tg.sets} x ${tg.secs} sec${per?' '+per:''}`:`${tg.sets} x ${tg.reps} reps${per?' '+per:''}`;
+  const lastTxt=last?`Last time: ${last.secs?last.secs+' sec':(last.reps||'?')+' reps'}${last.lbs?' at '+last.lbs+' lb':''}`:'';
+  const nw=!e.w;
+  const rows=ex.sets.map((s,i)=>{
+    const valInp=tg.secs
+      ?(s.ok?`<input inputmode="numeric" type="number" data-f="secs" data-i="${i}" value="${s.secs}" placeholder="${tg.secs}">`:`<button class="tbtn ${cd&&cd.i===i&&cd.page===A.page?'run':''}" data-act="cd" data-i="${i}">${cd&&cd.i===i&&cd.page===A.page?mmss(cd.left)+' · stop':'&#9654; '+tg.secs+' sec'}</button>`)
+      :`<input inputmode="numeric" type="number" data-f="reps" data-i="${i}" value="${s.reps}" placeholder="${tg.reps}">`;
+    const wInp=nw?'':`<input inputmode="decimal" type="number" data-f="lbs" data-i="${i}" value="${s.lbs}" placeholder="lb">`;
+    return`<div class="setrow ${s.ok?'ok':''} ${s.pr?'pr':''}"><div class="n">${s.pr?'&#9733;':i+1}</div>${valInp}${wInp}<button class="ck" data-act="ck" data-i="${i}">&#10003;</button></div>`}).join('');
+  const resting=restEnd>Date.now();
+  el.innerHTML=`<div class="p-top">
+      <div class="row"><button class="p-x" data-act="pexit">&#10005;</button><div class="sp" style="text-align:center"><div class="clock" id="clk">${mmss((Date.now()-A.start)/1000)}</div><div class="small muted">${esc(A.title)}</div></div><div class="p-x" style="background:none;font-weight:700;font-size:15px;color:var(--muted)">${A.page+1}/${A.ex.length}</div></div>
+      <div class="dots">${A.ex.map((x,i)=>`<i class="${i===A.page?'c':(x.sets.some(s=>s.ok)?'d':'')}"></i>`).join('')}</div>
+      <div class="rest" id="rest" style="display:${resting?'flex':'none'}"><span>Rest</span><span id="restt">${mmss((restEnd-Date.now())/1000)}</span><div class="tr"><i id="restb" style="width:${resting?(restEnd-Date.now())/restLen*100:0}%"></i></div><button data-act="skiprest" style="color:var(--yellow);font-weight:700">Skip</button></div>
+    </div>
+    <div class="p-body" id="pbody">
+      <h2 class="p-name">${esc(e.name)}</h2>
+      <div class="row" style="margin-top:8px;flex-wrap:wrap;gap:6px"><span class="pill g">${tgt}</span>${tg.rest?`<span class="pill">Rest ${tg.rest}s</span>`:''}</div>
+      ${lastTxt?`<div class="small muted" style="margin-top:8px">${lastTxt}</div>`:''}
+      ${ex.sug?`<div class="sug ${ex.sug.up?'up':''}">${ex.sug.up?'&#9650; ':''}${esc(ex.sug.msg)}</div>`:''}
+      <div class="diagram">${figureSVG(e)}</div>
+      <ul class="cues">${e.cues.map(c=>'<li>'+esc(c)+'</li>').join('')}</ul>
+      <div class="sets ${nw?'nw':''}"><div class="sethead"><span>Set</span><span>${tg.secs?'Time':'Reps'}</span>${nw?'':'<span>Weight</span>'}<span></span></div>${rows}</div>
+      <button class="addset" data-act="addset">+ Add set</button>
+      <a class="yt" href="https://www.youtube.com/results?search_query=${encodeURIComponent(e.yt||e.name+' exercise')}" target="_blank" rel="noopener"><svg width="22" height="16" viewBox="0 0 22 16"><rect width="22" height="16" rx="4" fill="#ff3d3d"/><path d="M9 4.5v7l6-3.5z" fill="#fff"/></svg> Watch a demo on YouTube</a>
+    </div>
+    <div class="p-nav"><button class="btn ghost" data-act="prev" ${A.page===0?'disabled':''}>&#8249; Prev</button><button class="btn" data-act="${A.page===A.ex.length-1?'finish':'next'}">${A.page===A.ex.length-1?'Finish':'Next &#8250;'}</button></div>`;
+  if(!tick)tick=setInterval(playerTick,250);
+}
+function playerTick(){
+  const A=S.active;if(!A){clearInterval(tick);tick=null;return}
+  const c=document.getElementById('clk');if(c)c.textContent=mmss((Date.now()-A.start)/1000);
+  const r=document.getElementById('rest');
+  if(r){const left=restEnd-Date.now();
+    if(left>0){r.style.display='flex';document.getElementById('restt').textContent=mmss(left/1000);document.getElementById('restb').style.width=(left/restLen*100)+'%'}
+    else if(r.style.display!=='none'){r.style.display='none';if(restEnd&&!r.dataset.skip)beep();restEnd=0}
+    r.dataset.skip='';}
+  if(cd){cd.left=Math.max(0,Math.ceil((cd.end-Date.now())/1000));const b=document.querySelector(`[data-act=cd][data-i="${cd.i}"]`);if(b)b.innerHTML=mmss(cd.left)+' · stop';
+    if(cd.left<=0){const x=cd;cd=null;beep();const s=S.active.ex[x.page].sets[x.i];s.secs=S.active.ex[x.page].tg.secs;logSet(x.page,x.i)}}
+}
+function logSet(page,i){
+  const A=S.active,ex=A.ex[page],s=ex.sets[i];
+  if(s.ok){s.ok=false;s.pr=false;save();renderPlayer();return}
+  if(ex.tg.secs){if(s.secs==='')s.secs=ex.tg.secs}else if(s.reps==='')s.reps=ex.tg.reps;
+  s.ok=true;
+  {const e=EX[ex.id],b=bestPrior(ex.id),v=metric(e,s),cur=Math.max(0,...ex.sets.filter((x,j)=>j!==i&&x.ok).map(x=>metric(e,x)));
+   if(b>0&&v>b&&v>cur){s.pr=true;toast('New personal best! '+v+' '+(e.w?'lb':(ex.tg.secs?'sec':'reps')))}}
+  const nxt=ex.sets.find(x=>!x.ok);if(nxt&&EX[ex.id].w&&nxt.lbs===''&&s.lbs!=='')nxt.lbs=s.lbs;
+  const rest=ex.tg.rest;if(rest){restLen=rest*1000;restEnd=Date.now()+restLen}
+  save();renderPlayer();
+}
+function onPlayerInput(ev){
+  const t=ev.target;if(!t.dataset.f)return;
+  const s=S.active.ex[S.active.page].sets[+t.dataset.i];s[t.dataset.f]=t.value===''?'':Number(t.value);save();
+}
+function addSwipe(el){
+  let x0=null,y0=null;
+  el.addEventListener('touchstart',e=>{if(e.target.closest('input,.p-nav,.p-top'))return;x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
+  el.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
+    if(Math.abs(dx)>70&&Math.abs(dx)>Math.abs(dy)*1.6){const A=S.active;if(dx<0&&A.page<A.ex.length-1){A.page++;cd=null;save();renderPlayer();document.getElementById('pbody').scrollTop=0}else if(dx>0&&A.page>0){A.page--;cd=null;save();renderPlayer()}}},{passive:true});
+}
+function summary(){
+  const A=S.active;const dur=(Date.now()-A.start)/1000;
+  const sets=A.ex.reduce((a,e)=>a+e.sets.filter(s=>s.ok).length,0);
+  const vol=A.ex.reduce((a,e)=>a+e.sets.filter(s=>s.ok&&s.lbs).reduce((b,s)=>b+(s.lbs*(s.reps||0)),0),0);
+  const exd=A.ex.filter(e=>e.sets.some(s=>s.ok)).length;
+  sheet(`<div style="text-align:center;font-size:44px">&#127942;</div><h2 style="text-align:center">Nice work${S.profile.name?', '+esc(S.profile.name):''}</h2>
+  <div class="sumgrid"><div class="stat"><b>${mmss(dur)}</b><span>time</span></div><div class="stat"><b>${sets}</b><span>sets</span></div><div class="stat"><b>${exd}/${A.ex.length}</b><span>exercises</span></div><div class="stat"><b>${vol?Math.round(vol).toLocaleString():'-'}</b><span>lb lifted</span></div></div>
+  ${sets?'':'<p class="muted small" style="text-align:center">No sets checked off yet. Tap the check on each set to log it.</p>'}
+  <button class="btn" data-act="savew" ${sets?'':'disabled'}>Save workout</button><button class="btn ghost" style="margin-top:8px" data-act="close">Keep going</button>`);
+}
+function saveWorkout(){
+  const A=S.active;const t=todayKey();
+  const log={id:uid(),date:t,start:A.start,dur:Math.round((Date.now()-A.start)/1000),pid:A.pid,planId:A.planId,title:A.title,
+    ex:A.ex.map(e=>({id:e.id,name:EX[e.id].name,tg:e.tg,sets:e.sets.filter(s=>s.ok).map(s=>{const o={reps:s.reps===''?null:s.reps,lbs:s.lbs===''?null:s.lbs,secs:s.secs===''?null:s.secs};if(s.pr)o.pr=1;return o})})).filter(e=>e.sets.length)};
+  S.logs.push(log);
+  if(A.planId){const p=S.plans.find(x=>x.id===A.planId);if(p&&p.sessions[A.sIdx])p.sessions[A.sIdx].done=t}
+  S.active=null;restEnd=0;cd=null;save();
+  try{wake&&wake.release()}catch(e){}
+  const el=document.querySelector('.player');if(el)el.remove();
+  closeSheet();tab='today';render();
+  const fresh=checkBadges();
+  if(fresh.length)showUnlocked(fresh);else toast('Workout saved');
+  if(updateWaiting)setTimeout(()=>location.reload(),fresh.length?6000:1500);
+}
+function exitPlayer(){
+  sheet(`<h2>Leave this workout?</h2><p class="muted">You can save what you have done so far.</p>
+  <button class="btn" data-act="finish">Save what I did</button>
+  <button class="btn ghost" style="margin-top:8px" data-act="close">Keep going</button>
+  <button class="btn danger" style="margin-top:8px" data-act="discard">Discard workout</button>`);
+}
+
+/* ---------- golf rounds ---------- */
+function shiftForRounds(){
+  const t=todayKey(),moves=[],RD=new Set(S.rounds);
+  const bad=k=>RD.has(k)||RD.has(dkey(addDays(pkey(k),1)));
+  S.plans.forEach(p=>{if(!['strength','power'].includes(p.pid))return;
+    p.sessions.forEach(s=>{if(s.done||s.date<t||!bad(s.date))return;
+      const taken=k=>S.plans.some(q=>q.sessions.some(x=>x!==s&&x.date===k));
+      for(const off of [-1,1,-2,2,-3,3]){const k=dkey(addDays(pkey(s.date),off));if(k<t||bad(k)||taken(k))continue;moves.push(PROGRAMS[p.pid].short+': '+fmtDate(s.date)+' to '+fmtDate(k));s.date=k;break}
+    })});
+  return moves;
+}
+
+/* ---------- badges ---------- */
+const GLY={
+  flag:'<path d="M8 21V4"/><path d="M8 4l10 4-10 4"/><path d="M5 21h7"/>',
+  fire:'<path d="M12 3c1 4 5 5 5 10a5 5 0 0 1-10 0c0-3 2-4 2-6 1 1 2 2 2 4 1-2 1-5 1-8z"/>',
+  cal:'<rect x="4" y="5" width="16" height="15" rx="2"/><path d="M4 10h16M9 15l2 2 4-4"/>',
+  star:'<path d="M12 3l2.7 5.6 6.1.9-4.4 4.3 1 6.1L12 17l-5.4 2.9 1-6.1-4.4-4.3 6.1-.9z"/>',
+  weight:'<path d="M3 10v4M6 7v10M18 7v10M21 10v4M6 12h12"/>',
+  trophy:'<path d="M8 4h8v5a4 4 0 0 1-8 0z"/><path d="M8 6H5a3 3 0 0 0 3 4M16 6h3a3 3 0 0 1-3 4M12 13v4M8 20h8"/>',
+  sun:'<circle cx="12" cy="12" r="4"/><path d="M12 2v2M12 20v2M4 12H2M22 12h-2M5 5l1.5 1.5M17.5 17.5L19 19M5 19l1.5-1.5M17.5 6.5L19 5"/>',
+  bolt:'<path d="M13 2 4 14h7l-1 8 9-12h-7z"/>',
+  ball:'<circle cx="12" cy="12" r="8"/><circle cx="10" cy="9" r=".8"/><circle cx="14" cy="9" r=".8"/><circle cx="12" cy="12" r=".8"/><circle cx="9" cy="13" r=".8"/><circle cx="15" cy="13" r=".8"/>'
+};
+const glyph=g=>`<svg viewBox="0 0 24 24">${GLY[g]}</svg>`;
+const BC={g:'#3fd47a',o:'#ff8a3d',y:'#f5c84c',b:'#4fb8ff',p:'#b48cff'};
+const BADGES=[
+  {id:'first',name:'First Tee',desc:'Log your first workout.',g:'flag',c:BC.g,p:x=>[x.n,1]},
+  {id:'front9',name:'Front Nine',desc:'Log 9 workouts.',g:'flag',c:BC.g,p:x=>[x.n,9]},
+  {id:'full18',name:'Full Round',desc:'Log 18 workouts.',g:'flag',c:BC.g,p:x=>[x.n,18]},
+  {id:'h36',name:'36 Holes',desc:'Log 36 workouts.',g:'ball',c:BC.g,p:x=>[x.n,36]},
+  {id:'h72',name:'Tournament',desc:'Log 72 workouts. Four full rounds.',g:'trophy',c:BC.y,p:x=>[x.n,72]},
+  {id:'three',name:'Three-Peat',desc:'3 workouts in one week.',g:'fire',c:BC.o,p:x=>[x.maxWeek,3]},
+  {id:'perfect',name:'Perfect Week',desc:'Every scheduled workout in a plan week done on its day.',g:'cal',c:BC.b,p:x=>[x.perfect?1:0,1]},
+  {id:'heater',name:'On a Heater',desc:'Work out 4 weeks in a row.',g:'fire',c:BC.o,p:x=>[x.streak,4]},
+  {id:'iron',name:'Iron Season',desc:'Work out 12 weeks in a row.',g:'fire',c:BC.o,p:x=>[x.streak,12]},
+  {id:'pb',name:'Personal Best',desc:'Beat your best on any exercise.',g:'star',c:BC.y,p:x=>[x.prs,1]},
+  {id:'pb10',name:'Record Breaker',desc:'Set 10 personal bests.',g:'star',c:BC.y,p:x=>[x.prs,10]},
+  {id:'goblet50',name:'Goblet 50',desc:'Goblet squat 50 lb.',g:'weight',c:BC.p,p:x=>[x.lb('goblet_squat'),50]},
+  {id:'plate1',name:'One Plate',desc:'Trap bar deadlift 135 lb.',g:'weight',c:BC.p,p:x=>[x.lb('trapbar_dl'),135]},
+  {id:'plate2',name:'Two Plates',desc:'Trap bar deadlift 225 lb.',g:'weight',c:BC.p,p:x=>[x.lb('trapbar_dl'),225]},
+  {id:'plate3',name:'Three Plates',desc:'Trap bar deadlift 315 lb.',g:'weight',c:BC.p,p:x=>[x.lb('trapbar_dl'),315]},
+  {id:'bigday',name:'Big Day',desc:'Lift 5,000 lb total in one workout.',g:'weight',c:BC.p,p:x=>[x.maxVol,5000]},
+  {id:'tourbag',name:'Tour Bag',desc:'Lift 50,000 lb total, all time.',g:'weight',c:BC.p,p:x=>[x.totVol,50000]},
+  {id:'warm',name:'Warmed Up',desc:'Do the pre-round warmup.',g:'sun',c:BC.y,p:x=>[x.warm,1]},
+  {id:'ready',name:'Round Ready',desc:'Do the warmup on a day you play.',g:'flag',c:BC.y,p:x=>[x.ready?1:0,1]},
+  {id:'allround',name:'All-Rounder',desc:'A workout from each of the 4 programs.',g:'star',c:BC.b,p:x=>[x.progs,4]},
+  {id:'grad',name:'Graduate',desc:'Finish a 6-week plan.',g:'trophy',c:BC.y,p:x=>[x.grad?1:0,1]},
+  {id:'hio',name:'Hole in One',desc:'Finish a 6-week plan without skipping a day.',g:'trophy',c:BC.y,p:x=>[x.hio?1:0,1]},
+  {id:'early',name:'Early Bird',desc:'Start a workout before 7 am.',g:'sun',c:BC.b,p:x=>[x.early?1:0,1]},
+  {id:'mulligan',name:'Mulligan',desc:'Work out the day after a skip.',g:'bolt',c:BC.o,p:x=>[x.mull?1:0,1]}
+];
+function bstats(){
+  const L=S.logs,wk=k=>{const x=pkey(k);x.setDate(x.getDate()-x.getDay());return dkey(x)};
+  const wc={};L.forEach(l=>{const k=wk(l.date);wc[k]=(wc[k]||0)+1});
+  let streak=0,run=0,prev=null;Object.keys(wc).sort().forEach(k=>{run=(prev&&dkey(addDays(pkey(prev),7))===k)?run+1:1;streak=Math.max(streak,run);prev=k});
+  const vol=l=>l.ex.reduce((a,e)=>a+e.sets.reduce((b,s)=>b+(s.lbs||0)*(s.reps||0),0),0);
+  const vols=L.map(vol);const all=S.plans.concat(S.archive);
+  const fin=all.filter(p=>p.sessions.length&&p.sessions.every(s=>s.done));
+  const perfect=all.some(p=>{const w={};p.sessions.forEach(s=>{(w[s.week]=w[s.week]||[]).push(s)});return Object.values(w).some(a=>a.length>=2&&a.every(s=>s.done&&s.done===s.date))});
+  return{n:L.length,maxWeek:Math.max(0,...Object.values(wc)),streak,perfect,
+    prs:L.reduce((a,l)=>a+l.ex.filter(e=>e.sets.some(s=>s.pr)).length,0),
+    lb:id=>Math.max(0,...L.flatMap(l=>l.ex.filter(e=>e.id===id).flatMap(e=>e.sets.map(s=>s.lbs||0)))),
+    maxVol:Math.max(0,...vols),totVol:vols.reduce((a,b)=>a+b,0),
+    warm:L.filter(l=>l.pid==='warmup').length,ready:L.some(l=>l.pid==='warmup'&&S.rounds.includes(l.date)),
+    progs:new Set(L.map(l=>l.pid).filter(p=>p&&p!=='warmup')).size,
+    grad:fin.length>0,hio:fin.some(p=>p.sessions.every(s=>s.done<=s.date)),
+    early:L.some(l=>new Date(l.start).getHours()<7),
+    mull:L.some(l=>dayStatus(dkey(addDays(pkey(l.date),-1)))==='missed')};
+}
+function checkBadges(){
+  const x=bstats(),fresh=[];
+  BADGES.forEach(b=>{const[c,m]=b.p(x);if(c>=m&&!S.badges[b.id]){S.badges[b.id]=todayKey();fresh.push(b)}});
+  if(fresh.length)save();return fresh;
+}
+function showUnlocked(list){
+  sheet(`<div class="tag" style="text-align:center;color:var(--green)">Workout saved · ${list.length>1?list.length+' badges':'badge'} unlocked</div>`+list.map(b=>`<div style="text-align:center;margin-top:14px"><div class="medal big" style="--c:${b.c}">${glyph(b.g)}</div><h2>${b.name}</h2><p class="muted" style="margin:4px 0 0">${b.desc}</p></div>`).join('')+`<button class="btn" style="margin-top:20px" data-act="close">Nice</button>`);
+}
+function openBadge(id){
+  const b=BADGES.find(x=>x.id===id),on=S.badges[id],[c,m]=b.p(bstats());
+  sheet(`<div style="text-align:center" class="${on?'':'bd lock'}"><div class="medal big" style="--c:${b.c}">${glyph(b.g)}</div></div><h2 style="text-align:center">${b.name}</h2><p class="muted" style="text-align:center;margin:6px 0 14px">${b.desc}</p>
+  ${on?`<p style="text-align:center;color:var(--green);font-weight:600">Earned ${fmtDate(on)}</p>`:(m>1?`<div class="row small muted"><span>Progress</span><span class="sp"></span><span>${Math.min(c,m).toLocaleString()} / ${m.toLocaleString()}</span></div><div class="pbar"><i style="width:${Math.min(100,c/m*100)}%"></i></div>`:'<p class="muted small" style="text-align:center">Not earned yet.</p>')}
+  <button class="btn ghost" style="margin-top:18px" data-act="close">Close</button>`);
+}
+
+/* ---------- progress ---------- */
+function series(id){const e=EX[id],out=[];S.logs.forEach(l=>l.ex.forEach(x=>{if(x.id===id&&x.sets.length)out.push({date:l.date,v:Math.max(...x.sets.map(s=>metric(e,s))),pr:x.sets.some(s=>s.pr),sets:x.sets})}));return out}
+function spark(pts,w,h){if(pts.length<2)return'';const vs=pts.map(p=>p.v),mn=Math.min(...vs),mx=Math.max(...vs),r=mx-mn||1;
+  return`<svg width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><polyline fill="none" stroke="#3fd47a" stroke-width="2" stroke-linejoin="round" stroke-linecap="round" points="${pts.map((p,i)=>(2+i*(w-4)/(pts.length-1)).toFixed(1)+','+(h-3-(p.v-mn)/r*(h-6)).toFixed(1)).join(' ')}"/></svg>`}
+function viewProg(){
+  const earned=BADGES.filter(b=>S.badges[b.id]).length;
+  let h=`<h1>Progress</h1><div class="row" style="margin:16px 0 0"><h3 class="sp">Badges</h3><span class="muted small">${earned} of ${BADGES.length}</span></div>
+  <div class="bgrid">${BADGES.map(b=>`<button class="bd ${S.badges[b.id]?'':'lock'}" data-act="badge" data-v="${b.id}"><span class="medal" style="--c:${b.c}">${glyph(b.g)}</span><span class="bn">${b.name}</span></button>`).join('')}</div>
+  <h3>Your lifts</h3>`;
+  const ids=[];for(let i=S.logs.length-1;i>=0;i--)S.logs[i].ex.forEach(e=>{if(!ids.includes(e.id)&&EX[e.id])ids.push(e.id)});
+  if(!ids.length)h+='<p class="muted">Log a workout and your exercises show up here with a chart of your progress.</p>';
+  h+=ids.map(id=>{const e=EX[id],pts=series(id),best=Math.max(...pts.map(p=>p.v)),last=pts[pts.length-1].v,u=unitOf(e);
+    return`<button class="list-btn" data-act="lift" data-v="${id}" style="padding:12px 14px"><div class="sp"><b>${esc(e.name)}</b><div class="small muted">Best ${best} ${u} · last ${last} ${u}</div></div>${spark(pts.slice(-10),70,26)}<span class="chev">&#8250;</span></button>`}).join('');
+  return h;
+}
+function openLift(id){
+  const e=EX[id],pts=series(id),u=unitOf(e);
+  const W=330,H=180,pl=34,pr=12,pt=14,pb=26;
+  const vs=pts.map(p=>p.v);let mn=Math.min(...vs),mx=Math.max(...vs);if(mn===mx){mn=Math.max(0,mn-5);mx=mx+5}
+  const X=i=>pts.length<2?(pl+W-pr)/2:pl+i*(W-pl-pr)/(pts.length-1),Y=v=>pt+(1-(v-mn)/(mx-mn))*(H-pt-pb);
+  const line=pts.map((p,i)=>X(i).toFixed(1)+','+Y(p.v).toFixed(1)).join(' ');
+  const svg=`<svg viewBox="0 0 ${W} ${H}">
+    ${[mn,(mn+mx)/2,mx].map(v=>`<line x1="${pl}" x2="${W-pr}" y1="${Y(v)}" y2="${Y(v)}" stroke="#24322a"/><text x="${pl-6}" y="${Y(v)+4}" text-anchor="end" font-size="11" fill="#8a9c91">${Math.round(v)}</text>`).join('')}
+    ${pts.length>1?`<polygon points="${X(0)},${H-pb} ${line} ${X(pts.length-1)},${H-pb}" fill="#3fd47a" opacity=".12"/><polyline points="${line}" fill="none" stroke="#3fd47a" stroke-width="2.5" stroke-linejoin="round"/>`:''}
+    ${pts.map((p,i)=>`<circle cx="${X(i)}" cy="${Y(p.v)}" r="${p.pr?5:3.5}" fill="${p.pr?'#f5c84c':'#3fd47a'}" stroke="#131b16" stroke-width="2"/>`).join('')}
+    <text x="${pl}" y="${H-6}" font-size="11" fill="#8a9c91">${fmtDate(pts[0].date)}</text>${pts.length>1?`<text x="${W-pr}" y="${H-6}" font-size="11" fill="#8a9c91" text-anchor="end">${fmtDate(pts[pts.length-1].date)}</text>`:''}
+  </svg>`;
+  const best=Math.max(...vs);
+  sheet(`<h2>${esc(e.name)}</h2><p class="muted" style="margin:4px 0 0">Best ${best} ${u} · ${pts.length} session${pts.length===1?'':'s'}</p>
+  <div class="chart">${svg}</div><div class="small muted" style="margin:-4px 0 10px"><span style="color:var(--yellow)">&#9679;</span> personal best</div>
+  ${pts.slice(-8).reverse().map(p=>`<div class="hist-ex"><div class="row"><b class="sp">${fmtDate(p.date)}</b>${p.pr?'<span class="pill" style="color:var(--yellow);border-color:#5a4a15">PB</span>':''}</div><div class="small muted">${p.sets.map(s=>s.secs?s.secs+'s':((s.reps||0)+(s.lbs?' x '+s.lbs+' lb':''))).join(' · ')}</div></div>`).join('')}
+  <button class="btn ghost" style="margin-top:14px" data-act="close">Close</button>`);
+}
+
+/* ---------- events ---------- */
+let pendingAsk=null;
+function ask(title,msg,ok,fn){pendingAsk=fn;sheet(`<h2>${esc(title)}</h2><p class="muted">${esc(msg)}</p><button class="btn danger" data-act="askok">${esc(ok)}</button><button class="btn ghost" style="margin-top:8px" data-act="close">Cancel</button>`)}
+function onClick(ev){
+  const el=ev.target.closest('[data-act]');if(!el)return;
+  const act=el.dataset.act,v=el.dataset.v;
+  if(act==='closebg'){if(ev.target===el)closeSheet();return}
+  if(act.startsWith('q')){quizAct(act,el);return}
+  switch(act){
+    case'tab':tab=v;closeSheet();render();window.scrollTo(0,0);break;
+    case'openprog':openProgram(v);break;
+    case'setup':setupStart(v);break;
+    case'env':SU.env=v;SU.step=v==='home'?'equip':'sched';if(v==='gym')SU.equip=[];renderSetup();break;
+    case'eq':if(v==='bw'){SU.equip=[];SU.bwOnly=true}else{SU.bwOnly=false;SU.equip=SU.equip.includes(v)?SU.equip.filter(x=>x!==v):SU.equip.concat(v)}renderSetup();break;
+    case'eqnext':SU.step='sched';renderSetup();break;
+    case'sustep':SU.step=v;renderSetup();break;
+    case'dayt':{const d=+v;SU.days=SU.days.includes(d)?SU.days.filter(x=>x!==d):SU.days.concat(d);renderSetup();break}
+    case'create':{
+      const old=planOf(SU.pid);if(old){S.plans=S.plans.filter(p=>p!==old);S.archive.push(old)}
+      S.plans.push(makePlan(SU.pid,SU.env,SU.equip,SU.days.slice().sort(),SU.time,SU.start));shiftForRounds();save();render();SU.step='done';renderSetup();break}
+    case'apple':addApple(S.plans.find(p=>p.id===v));break;
+    case'google':addGoogle(S.plans.find(p=>p.id===v));break;
+    case'close':closeSheet();break;
+    case'endplan':ask('End this plan?','Your logged workouts stay in the calendar.','End plan',()=>{const o=S.plans.find(p=>p.id===v);if(o)S.archive.push(o);S.plans=S.plans.filter(p=>p.id!==v);save();closeSheet();render()});break;
+    case'start':startPlan(v);break;
+    case'startwarm':if(S.active){renderPlayer();break}beginWorkout('warmup',null,null,'home',[],1,0);break;
+    case'calm':calM=new Date(calM.getFullYear(),calM.getMonth()+(+v),1);render();break;
+    case'day':openDay(v);break;
+    case'round':{if(S.rounds.includes(v)){S.rounds=S.rounds.filter(x=>x!==v);save();render();openDay(v);break}
+      S.rounds.push(v);const mv=shiftForRounds();save();render();
+      if(mv.length)sheet(`<h2>Moved for your round</h2><p class="muted">Heavy leg days are kept off the day before and the day of a round.</p>${mv.map(m=>'<div class="pill" style="margin:0 6px 6px 0">'+esc(m)+'</div>').join('')}<p class="muted small">If you added this plan to your calendar, add it again from Programs to update the dates.</p><button class="btn" data-act="close">Got it</button>`);
+      else openDay(v);break}
+    case'badge':openBadge(v);break;
+    case'lift':openLift(v);break;
+    case'dellog':ask('Delete this workout?','This removes it from your calendar.','Delete',()=>{const l=S.logs.find(x=>x.id===v);S.logs=S.logs.filter(x=>x.id!==v);if(l&&l.planId){const p=S.plans.find(x=>x.id===l.planId);if(p)p.sessions.forEach(s=>{if(s.done===l.date&&!S.logs.some(o=>o.planId===p.id&&o.date===l.date))s.done=null})}save();closeSheet();render()});break;
+    case'requiz':startQuiz();break;
+    case'reset':ask('Erase everything?','All your answers, plans and workouts on this phone will be deleted.','Erase',()=>{S.profile=null;S.plans=[];S.logs=[];S.active=null;S.rounds=[];S.badges={};S.archive=[];save();closeSheet();render()});break;
+    case'askok':{const f=pendingAsk;pendingAsk=null;if(f)f();break}
+    case'backup':{const b=new Blob([JSON.stringify({profile:S.profile,plans:S.plans,logs:S.logs,rounds:S.rounds,badges:S.badges,archive:S.archive},null,1)],{type:'application/json'});const a=document.createElement('a');a.href=URL.createObjectURL(b);a.download='swingfit-backup-'+todayKey()+'.json';document.body.appendChild(a);a.click();a.remove();break}
+    case'restore':{const i=document.createElement('input');i.type='file';i.accept='.json,application/json';i.onchange=()=>{const f=i.files[0];if(!f)return;f.text().then(t=>{try{const d=JSON.parse(t);if(!d.profile)throw 0;S.profile=d.profile;S.plans=d.plans||[];S.logs=d.logs||[];S.rounds=d.rounds||[];S.badges=d.badges||{};S.archive=d.archive||[];save();render();toast('Restored')}catch(e){toast('That file did not look like a backup')}})};i.click();break}
+    // player
+    case'ck':logSet(S.active.page,+el.dataset.i);break;
+    case'cd':{const i=+el.dataset.i,A=S.active;
+      if(cd&&cd.i===i&&cd.page===A.page){const s=A.ex[A.page].sets[i];s.secs=A.ex[A.page].tg.secs-cd.left;cd=null;logSet(A.page,i);break}
+      try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume&&actx.resume()}catch(e){}
+      const secs=A.ex[A.page].tg.secs;cd={i,page:A.page,end:Date.now()+secs*1000,left:secs};renderPlayer();break}
+    case'addset':{const ex=S.active.ex[S.active.page];const l=ex.sets[ex.sets.length-1];ex.sets.push({reps:'',lbs:l?l.lbs:'',secs:'',ok:false});save();renderPlayer();break}
+    case'skiprest':restEnd=0;{const r=document.getElementById('rest');if(r){r.dataset.skip='1';r.style.display='none'}}break;
+    case'next':S.active.page++;cd=null;save();renderPlayer();document.getElementById('pbody').scrollTop=0;break;
+    case'prev':S.active.page--;cd=null;save();renderPlayer();break;
+    case'finish':summary();break;
+    case'savew':saveWorkout();break;
+    case'pexit':exitPlayer();break;
+    case'discard':S.active=null;restEnd=0;cd=null;save();{const p=document.querySelector('.player');if(p)p.remove()}closeSheet();render();break;
+  }
+}
+document.addEventListener('click',onClick);
+document.addEventListener('pointerdown',()=>{try{if(!actx){actx=new (window.AudioContext||window.webkitAudioContext)()}else if(actx.state==='suspended')actx.resume()}catch(e){}},{once:false,passive:true});
+document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible'){if(S.active&&navigator.wakeLock)navigator.wakeLock.request('screen').then(w=>wake=w).catch(()=>{});if(!S.active)render()}});
+
+checkBadges();
+render();
+/* ---------- auto update ----------
+   The service worker checks for a new version every time the app opens or comes back to the front.
+   When one is ready it reloads, unless a workout is in progress (then it waits until you save). */
+let updateWaiting=false;
+if('serviceWorker' in navigator&&location.protocol==='https:'&&!/claudeusercontent|claude\.ai/.test(location.host)){
+  const hadController=!!navigator.serviceWorker.controller;
+  navigator.serviceWorker.register('sw.js',{updateViaCache:'none'}).then(reg=>{
+    const check=()=>reg.update().catch(()=>{});
+    document.addEventListener('visibilitychange',()=>{if(document.visibilityState==='visible')check()});
+    setInterval(check,30*60*1000);
+  }).catch(()=>{});
+  navigator.serviceWorker.addEventListener('controllerchange',()=>{
+    if(!hadController)return;
+    if(S.active){updateWaiting=true;return}
+    location.reload();
+  });
+}
+</script>
+</body>
+</html>
