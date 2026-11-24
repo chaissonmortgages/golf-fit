@@ -20,7 +20,7 @@ Never change these shapes in a way that breaks existing data on the phone. If yo
 ## Code map
 - Exercises: `X(id, name, {...})` library. `poses` are two stick figure poses from `POSE`, animated by `figureSVG`.
 - Programs: `PROGRAMS[pid].tpl` is a list of workout days, each a list of slots, each slot a preference list of exercise ids. `pickExercises` takes the first one that fits the equipment and sore spots. Goblet squat and a deadlift lead every Strength day: keep it that way.
-- Workout player: one scrolling page (`exCard` per exercise, form guide with diagrams at the bottom via `guideCard`). Enter in a weight box completes the set (`completeSet`) and jumps to the next set. Weight typed in one set fills the remaining sets.
+- Workout player: one exercise per page (`exCard`, page index `active.page`). Swipe or the arrow buttons switch pages (`goPage`); the bar at the top shows white = not done, green = done, yellow = current. When every set is done it moves to the next unfinished exercise on its own (`maybeAdvance`). Enter in a weight box completes the set (`completeSet`). Weight typed in one set fills the remaining sets. `How?` opens a popup with the stick figure, cues and a YouTube button (`openHow`). Mack prefers this paged layout over one long page.
 - View/edit screen: `openPreview`, search with `resultsHTML`, edits saved through `pvEdit`.
 - Progression: `target()`. Weight tips: `suggestFor()`. Personal bests: `logSet()`.
 - Badges: `BADGES` array, each with `p(stats) => [current, needed]`. Earned dates are stored, never taken away.

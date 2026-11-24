@@ -92,9 +92,11 @@ label.lbl{display:block;margin:18px 0 8px;font-weight:600}
 .clock{font-size:34px;font-weight:800;font-variant-numeric:tabular-nums;letter-spacing:-.02em}
 .p-x{width:40px;height:40px;border-radius:12px;background:var(--card2);font-size:20px;display:grid;place-items:center}
 .dots{display:flex;gap:4px;margin-top:10px}
-.dots i{flex:1;height:4px;border-radius:9px;background:var(--card2)}
-.dots i.d{background:var(--green-d)}
-.dots i.c{background:var(--green)}
+.dots i{flex:1;height:6px;border-radius:9px;background:#e9f1ec;cursor:pointer}
+.dots i.d{background:var(--green)}
+.dots i.c{background:var(--yellow)}
+.p-nav .btn.navb{flex:0 0 58px;width:58px;font-size:26px;padding:10px 0}
+.dots i{height:20px;padding:7px 0;background-clip:content-box}
 .rest{margin-top:10px;display:flex;align-items:center;gap:10px;background:#2a2410;border:1px solid #5a4a15;color:var(--yellow);padding:8px 12px;border-radius:12px;font-weight:700}
 .rest .tr{flex:1;height:5px;background:#3d3414;border-radius:9px;overflow:hidden}
 .rest .tr i{display:block;height:100%;background:var(--yellow)}
@@ -869,36 +871,56 @@ function exCard(A,ei){
     <div class="row"><button class="addset" data-act="addset" data-v="${ei}">+ Add set</button><span class="sp"></span><button class="allbtn" data-act="allsets" data-v="${ei}" ${all?'disabled':''}>${all?'&#10003; Done':'Complete all'}</button></div>
   </section>`;
 }
-function guideCard(A,ei){
-  const e=EX[A.ex[ei].id];
-  return`<section class="guide" id="g${ei}"><h3 class="exn">${esc(e.name)}</h3><div class="diagram">${figureSVG(e)}</div><ul class="cues">${e.cues.map(c=>'<li>'+esc(c)+'</li>').join('')}</ul>
-    <a class="yt" href="https://www.youtube.com/results?search_query=${encodeURIComponent(e.yt||e.name+' exercise')}" target="_blank" rel="noopener"><svg width="22" height="16" viewBox="0 0 22 16"><rect width="22" height="16" rx="4" fill="#ff3d3d"/><path d="M9 4.5v7l6-3.5z" fill="#fff"/></svg> Watch a demo</a>
-    <button class="addset" data-act="backto" data-v="${ei}">&#8593; Back to sets</button></section>`;
+function openHow(ei){
+  const e=EX[S.active.ex[ei].id];
+  sheet(`<div class="row" style="margin-bottom:6px"><h2 class="sp">${esc(e.name)}</h2><button class="p-x" data-act="close" aria-label="Close">&#10005;</button></div>
+  <div class="diagram">${figureSVG(e)}</div>
+  <ul class="cues">${e.cues.map(c=>'<li>'+esc(c)+'</li>').join('')}</ul>
+  <a class="btn ghost" style="margin-top:16px;text-decoration:none" href="https://www.youtube.com/results?search_query=${encodeURIComponent(e.yt||e.name+' exercise')}" target="_blank" rel="noopener"><svg width="22" height="16" viewBox="0 0 22 16"><rect width="22" height="16" rx="4" fill="#ff3d3d"/><path d="M9 4.5v7l6-3.5z" fill="#fff"/></svg>&nbsp; Watch a demo on YouTube</a>`);
+}
+const exDone=x=>x.sets.length>0&&x.sets.every(s=>s.ok);
+function goPage(n){const A=S.active;if(!A||n<0||n>=A.ex.length||n===A.page)return;A.page=n;cd=null;save();renderPlayer()}
+function addSwipe(el){
+  let x0=null,y0=null;
+  el.addEventListener('touchstart',e=>{if(e.target.closest('input,.p-nav,.p-top,button'))return;x0=e.touches[0].clientX;y0=e.touches[0].clientY},{passive:true});
+  el.addEventListener('touchend',e=>{if(x0==null)return;const dx=e.changedTouches[0].clientX-x0,dy=e.changedTouches[0].clientY-y0;x0=null;
+    if(Math.abs(dx)>60&&Math.abs(dx)>Math.abs(dy)*1.5)goPage(S.active.page+(dx<0?1:-1))},{passive:true});
 }
 function renderPlayer(){
   const A=S.active;if(!A)return;
   let el=document.querySelector('.player');
-  if(!el){el=document.createElement('div');el.className='player';document.body.appendChild(el);el.addEventListener('input',onPlayerInput);el.addEventListener('keydown',onPlayerKey)}
-  const body=el.querySelector('#pbody'),top=body?body.scrollTop:0;
+  if(!el){el=document.createElement('div');el.className='player';document.body.appendChild(el);el.addEventListener('input',onPlayerInput);el.addEventListener('keydown',onPlayerKey);addSwipe(el)}
+  if(A.page==null||A.page>=A.ex.length)A.page=0;
+  const pg=A.page;
   const resting=restEnd>Date.now();
   el.innerHTML=`<div class="p-top">
-      <div class="row"><button class="p-x" data-act="pexit">&#10005;</button><div class="sp" style="text-align:center"><div class="clock" id="clk">${mmss((Date.now()-A.start)/1000)}</div><div class="small muted">${esc(A.title)}</div></div><div class="p-x" id="cnt" style="background:none;font-weight:700;font-size:14px;color:var(--muted);width:auto">${doneCount(A)}/${setCount(A)}</div></div>
+      <div class="row"><button class="p-x" data-act="pexit">&#10005;</button><div class="sp" style="text-align:center"><div class="clock" id="clk">${mmss((Date.now()-A.start)/1000)}</div><div class="small muted">${esc(A.title)}</div></div><div class="p-x" style="background:none;font-weight:700;font-size:15px;color:var(--muted)">${pg+1}/${A.ex.length}</div></div>
+      <div class="dots" id="dots">${dotsHTML(A)}</div>
       <div class="rest" id="rest" style="display:${resting?'flex':'none'}"><span>Rest</span><span id="restt">${mmss((restEnd-Date.now())/1000)}</span><div class="tr"><i id="restb" style="width:${resting?(restEnd-Date.now())/restLen*100:0}%"></i></div><button data-act="skiprest" style="color:var(--yellow);font-weight:700">Skip</button></div>
     </div>
     <div class="p-body" id="pbody">
-      ${A.ex.map((_,ei)=>exCard(A,ei)).join('')}
-      <button class="addset" style="display:block;margin:4px auto 0" data-act="addex">+ Add an exercise</button>
-      <div class="guide-h"><span>Form guide</span></div>
-      ${A.ex.map((_,ei)=>guideCard(A,ei)).join('')}
+      ${exCard(A,pg)}
+      <div class="small muted" style="text-align:center;margin-top:6px">Swipe left or right to switch exercises</div>
+      <button class="addset" style="display:block;margin:8px auto 0" data-act="addex">+ Add an exercise</button>
     </div>
-    <div class="p-nav"><button class="btn" data-act="finish">Finish workout</button></div>`;
-  el.querySelector('#pbody').scrollTop=top;
+    <div class="p-nav"><button class="btn ghost navb" data-act="prev" ${pg===0?'disabled':''} aria-label="Previous exercise">&#8249;</button><button class="btn" data-act="finish">Finish workout</button><button class="btn ghost navb" data-act="next" ${pg===A.ex.length-1?'disabled':''} aria-label="Next exercise">&#8250;</button></div>`;
   if(!tick)tick=setInterval(playerTick,250);
 }
+function dotsHTML(A){return A.ex.map((x,i)=>`<i class="${i===A.page?'c':(exDone(x)?'d':'')}" data-act="goto" data-v="${i}"></i>`).join('')}
 function refreshCard(ei){
-  const A=S.active,c=document.getElementById('ex'+ei);if(!c)return;
-  const t=document.createElement('div');t.innerHTML=exCard(A,ei);c.replaceWith(t.firstElementChild);
-  const n=document.getElementById('cnt');if(n)n.textContent=doneCount(A)+'/'+setCount(A);
+  const A=S.active,c=document.getElementById('ex'+ei);
+  if(c){const t=document.createElement('div');t.innerHTML=exCard(A,ei);c.replaceWith(t.firstElementChild)}
+  const d=document.getElementById('dots');if(d)d.innerHTML=dotsHTML(A);
+}
+// when every set of the current exercise is done, move on to the next unfinished one
+let advT=null;
+function maybeAdvance(ei){
+  const A=S.active;if(ei!==A.page||!exDone(A.ex[ei]))return;
+  clearTimeout(advT);
+  advT=setTimeout(()=>{if(!S.active||S.active.page!==ei)return;
+    const n=A.ex.length;for(let k=1;k<n;k++){const j=(ei+k)%n;if(!exDone(A.ex[j])){document.activeElement&&document.activeElement.blur&&document.activeElement.blur();goPage(j);return}}
+    summary();
+  },700);
 }
 function playerTick(){
   const A=S.active;if(!A){clearInterval(tick);tick=null;return}
@@ -922,7 +944,7 @@ function markDone(ei,i){
 function startRest(ei){const r=S.active.ex[ei].tg.rest;if(r){restLen=r*1000;restEnd=Date.now()+restLen;const el=document.getElementById('rest');if(el)el.style.display='flex'}}
 function focusNext(ei,i){
   const A=S.active;
-  for(let e2=ei;e2<A.ex.length;e2++){
+  for(let e2=ei;e2<=ei;e2++){
     const x=A.ex[e2],start=e2===ei?i+1:0;
     for(let j=start;j<x.sets.length;j++){if(x.sets[j].ok)continue;
       const inp=document.querySelector(`#s${e2}_${j} input[data-f=${EX[x.id].w?'lbs':'reps'}]`);
@@ -935,7 +957,8 @@ function focusNext(ei,i){
 function completeSet(ei,i,move){
   const A=S.active,s=A.ex[ei].sets[i];
   if(s.ok){s.ok=false;s.pr=false;save();refreshCard(ei);return}
-  markDone(ei,i);startRest(ei);save();refreshCard(ei);if(move)focusNext(ei,i);
+  markDone(ei,i);startRest(ei);save();refreshCard(ei);
+  if(exDone(A.ex[ei]))maybeAdvance(ei);else if(move)focusNext(ei,i);
 }
 function onPlayerInput(ev){
   const t=ev.target;if(!t.dataset.f)return;
@@ -1151,7 +1174,7 @@ function addDuring(id){
   const A=S.active,e=EX[id],tg=target(e,A.pid,A.week||1),last=lastFor(id),sug=suggestFor(id,tg,A.week||1);
   const w0=sug?sug.lbs:(e.w&&last&&last.lbs?last.lbs:'');
   A.ex.push({id,tg,sug,sets:Array.from({length:tg.sets},()=>({reps:tg.secs?'':tg.reps,lbs:e.w?w0:'',secs:'',ok:false}))});
-  save();closeSheet();renderPlayer();setTimeout(()=>{const c=document.getElementById('ex'+(A.ex.length-1));if(c)c.scrollIntoView({behavior:'smooth',block:'start'})},50);
+  A.page=A.ex.length-1;save();closeSheet();renderPlayer();
 }
 
 /* ---------- events ---------- */
@@ -1201,9 +1224,11 @@ function onClick(ev){
       try{actx=actx||new (window.AudioContext||window.webkitAudioContext)();actx.resume&&actx.resume()}catch(e){}
       const prev=cd;const secs=A.ex[ei].tg.secs;cd={e:ei,i,end:Date.now()+secs*1000,left:secs};if(prev&&prev.e!==ei)refreshCard(prev.e);refreshCard(ei);break}
     case'addset':{const ei=+v,x=S.active.ex[ei];const l=x.sets[x.sets.length-1];x.sets.push({reps:x.tg.secs?'':(l&&l.reps!==''?l.reps:x.tg.reps),lbs:l?l.lbs:'',secs:'',ok:false});save();refreshCard(ei);break}
-    case'allsets':{const ei=+v,x=S.active.ex[ei];x.sets.forEach((y,i)=>{if(!y.ok)markDone(ei,i)});startRest(ei);save();refreshCard(ei);break}
-    case'how':{const g=document.getElementById('g'+v);if(g)g.scrollIntoView({behavior:'smooth',block:'start'});break}
-    case'backto':{const g=document.getElementById('ex'+v);if(g)g.scrollIntoView({behavior:'smooth',block:'start'});break}
+    case'allsets':{const ei=+v,x=S.active.ex[ei];x.sets.forEach((y,i)=>{if(!y.ok)markDone(ei,i)});startRest(ei);save();refreshCard(ei);maybeAdvance(ei);break}
+    case'how':openHow(+v);break;
+    case'goto':goPage(+v);break;
+    case'next':goPage(S.active.page+1);break;
+    case'prev':goPage(S.active.page-1);break;
     case'addex':openAddDuring();break;
     case'pickex':{if(PV){pvAdd(v)}else{addDuring(v)}break}
     case'view':{const p=S.plans.find(x=>x.id===v);const i=nextSession(p);if(i<0){toast('Plan complete');break}openPreview(p.pid,p.sessions[i].tpl,p.id);break}
