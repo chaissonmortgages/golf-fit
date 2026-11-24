@@ -14,7 +14,7 @@ Netlify, linked to this repo. Every push to `main` deploys automatically (`netli
 
 The app is only reachable by its link. It is kept out of search engines.
 
-On iPhone open the Netlify link in Safari, then Share > Add to Home Screen.
+On Android open the Netlify link in Chrome, then menu (three dots) > Install app.
 
 Updates are automatic. Each deploy stamps a new build id into `sw.js`, the service worker fetches fresh files every time the app opens, and the installed app reloads itself into the new version (it waits if a workout is in progress). The build id shows at the bottom of the Profile tab.
 

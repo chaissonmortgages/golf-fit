@@ -1,6 +1,6 @@
 # Swing Fit: notes for Claude Code
 
-Personal golf workout app, installed on Mack's phone as a PWA, hosted on Netlify (auto deploys on push to `main`). Not a product.
+Personal golf workout app, installed on Mack's Android phone (Chrome) as a PWA, hosted on Netlify (auto deploys on push to `main`). Not a product.
 
 ## Structure
 - `index.html`: the whole app (HTML, CSS, vanilla JS). No frameworks, no build step, no dependencies.

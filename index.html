@@ -730,7 +730,7 @@ function viewMe(){
   ${r('Name',p.name||'')}${r('Experience',lv)}${r('Days a week',p.days)}${r('Where',p.env==='home'?'Home'+((p.equip||[]).length?' ('+p.equip.map(e=>e==='db'?'weights':'bands').join(', ')+')':' (bodyweight)'):(p.env==='gym'?'Gym':'Not set'))}${r('Exercises per workout',p.count||{20:4,30:5,45:6,60:7}[p.len]||5)}${r('Watch-outs',lim)}${r('Main goal',PROGRAMS[p.goal]?PROGRAMS[p.goal].name:'')}${p.hcp!==''&&p.hcp!=null?r('Handicap',p.hcp):''}${r('Usual time',fmtTime(p.time))}
   </div>
   <button class="btn ghost" data-act="requiz">Retake questionnaire</button>
-  <div class="card"><b>Get it on your home screen</b><p class="muted small" style="margin:6px 0 0">In Safari tap Share, then <b>Add to Home Screen</b>. It opens full screen and works offline. Your workouts are saved on this phone only.</p></div>
+  <div class="card"><b>Get it on your home screen</b><p class="muted small" style="margin:6px 0 0">In Chrome tap the menu (three dots), then <b>Install app</b> or <b>Add to Home screen</b>. It opens full screen and works offline. Your workouts are saved on this phone only.</p></div>
   <div class="row"><button class="btn ghost" data-act="backup">Back up data</button><button class="btn ghost" data-act="restore">Restore</button></div>
   <button class="btn danger" style="margin-top:22px" data-act="reset">Erase everything</button>
   <button class="btn ghost" style="margin-top:22px" data-act="checkupd">Check for updates</button>
@@ -752,7 +752,7 @@ function openProgram(pid){
     const t=todayKey();const left=upcoming(p).length;
     h+=`<div class="card"><div class="row"><span class="pill g">Active</span><span class="pill">Week ${planWeek(p)} of ${WEEKS}</span><span class="pill">${p.days.slice().sort().map(d=>DOW[d]).join(' ')}</span></div><p class="muted small" style="margin-bottom:0">${left} workouts left. Reminders at ${fmtTime(p.time)}.</p></div>
     <div class="tag" style="margin:16px 0 8px">Add to calendar</div>
-    <div class="row"><button class="btn ghost" data-act="apple" data-v="${p.id}">Apple Calendar</button><button class="btn ghost" data-act="google" data-v="${p.id}">Google Calendar</button></div>
+    <div class="row"><button class="btn ghost" data-act="google" data-v="${p.id}">Google Calendar</button><button class="btn ghost" data-act="apple" data-v="${p.id}">Other (.ics)</button></div>
     <div class="tag" style="margin:18px 0 0">Workouts</div>
     ${pr.tpl.map((_,ti)=>`<button class="list-btn" data-act="viewtpl" data-v="${p.id}" data-t="${ti}" style="padding:12px 14px"><div class="sp"><b>Workout ${'ABC'[ti]}</b>${S.custom[ckey(pid,ti)]?' <span class="pill" style="margin-left:6px">Edited</span>':''}<div class="small muted">${pickExercises(pid,ti,p.env,p.equip).map(id=>EX[id].name).join(', ')}</div></div><span class="chev">&#8250;</span></button>`).join('')}
     <button class="btn" style="margin-top:12px" data-act="start" data-v="${p.id}">&#9654;&nbsp; Start next workout</button>
@@ -794,8 +794,8 @@ function renderSetup(){
   if(SU.step==='done'){
     const p=planOf(SU.pid);
     h+=`<div style="text-align:center;font-size:48px;margin:6px 0">&#9971;</div><h2 style="text-align:center">You're set</h2><p class="muted" style="text-align:center">Add it to your calendar so your phone reminds you 15 minutes before each workout.</p>
-    <button class="btn" data-act="apple" data-v="${p.id}">Add to Apple Calendar</button>
-    <button class="btn ghost" style="margin-top:8px" data-act="google" data-v="${p.id}">Add to Google Calendar</button>
+    <button class="btn" data-act="google" data-v="${p.id}">Add to Google Calendar</button>
+    <button class="btn ghost" style="margin-top:8px" data-act="apple" data-v="${p.id}">Other calendar (.ics file)</button>
     <button class="btn ghost" style="margin-top:8px" data-act="close">Done</button>`;
   }
   sheet(h);
