@@ -14,11 +14,14 @@ Personal golf workout app, installed on Mack's phone as a PWA, hosted on Netlify
 - `logs`: `[{id, date, start, dur, pid, planId, title, ex:[{id, name, tg, sets:[{reps, lbs, secs, pr}]}]}]`
 - `active`: workout in progress, restored if the app is closed mid-workout
 - `rounds`: golf round dates, `badges`: `{badgeId: dateEarned}`, `archive`: ended plans
+- `custom`: `{'pid:tpl': [exerciseIds]}` workouts Mack edited. When present it replaces `pickExercises` output for that workout day.
 Never change these shapes in a way that breaks existing data on the phone. If you must, migrate on load.
 
 ## Code map
 - Exercises: `X(id, name, {...})` library. `poses` are two stick figure poses from `POSE`, animated by `figureSVG`.
 - Programs: `PROGRAMS[pid].tpl` is a list of workout days, each a list of slots, each slot a preference list of exercise ids. `pickExercises` takes the first one that fits the equipment and sore spots. Goblet squat and a deadlift lead every Strength day: keep it that way.
+- Workout player: one scrolling page (`exCard` per exercise, form guide with diagrams at the bottom via `guideCard`). Enter in a weight box completes the set (`completeSet`) and jumps to the next set. Weight typed in one set fills the remaining sets.
+- View/edit screen: `openPreview`, search with `resultsHTML`, edits saved through `pvEdit`.
 - Progression: `target()`. Weight tips: `suggestFor()`. Personal bests: `logSet()`.
 - Badges: `BADGES` array, each with `p(stats) => [current, needed]`. Earned dates are stored, never taken away.
 - Round days: `shiftForRounds()` moves Strength and Power sessions off a round day and the day before.
